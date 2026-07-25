@@ -52,6 +52,13 @@ body{
 }
 #connBadge.ok{background:var(--accent);}
 #connBadge.fail{background:var(--danger);}
+#onlineUsersBar{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;}
+.online-avatar{
+  width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);color:var(--primary);
+  display:flex;align-items:center;justify-content:center;font-size:.72em;font-weight:800;
+  border:2px solid var(--accent);cursor:default;
+}
+.online-count{font-size:.78em;opacity:.9;margin-left:4px;}
 #countdown{
   margin-top:10px;font-size:.95em;background:rgba(255,255,255,.15);
   display:inline-block;padding:8px 18px;border-radius:12px;
@@ -112,6 +119,17 @@ body{
 .req-check input{margin-top:3px;flex-shrink:0;width:16px;height:16px;}
 .epp-toggle{padding:9px 12px;border:none;border-radius:10px;background:#eef0f4;font-weight:700;cursor:pointer;font-size:.82em;margin:3px;}
 .epp-toggle.active{background:var(--primary);color:#fff;}
+
+.kit-opciones{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;}
+.kit-card{
+  border:2px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;background:#fafbff;
+}
+.kit-card:hover{border-color:var(--primary-light);}
+.kit-card.activo{border-color:var(--accent);background:#eafaf1;}
+.kit-card h4{color:var(--primary);margin-bottom:8px;}
+.kit-card ul{list-style:none;font-size:.85em;}
+.kit-card li{padding:3px 0;}
+@media(max-width:600px){.kit-opciones{grid-template-columns:1fr;}}
 
 .form-group{margin-bottom:14px;}
 .form-group label{display:block;font-weight:700;margin-bottom:6px;font-size:.9em;color:var(--ink);}
@@ -281,6 +299,7 @@ body{
   <p style="font-size:.8em;letter-spacing:.03em;opacity:.9;">Gestión y Planificación Industrial · Logística Portuaria · Responsabilidad Social y Cambio Climático</p>
   <p style="margin-top:10px;">🏫 Universidad del SABES, San Felipe</p>
   <div id="connBadge">Conectando...</div>
+  <div id="onlineUsersBar" style="margin-top:8px;"></div>
   <div id="countdown"></div>
 </div>
 
@@ -621,6 +640,29 @@ body{
       <label class="req-check"><input type="checkbox" data-epp-key="tortuguero_7"> Llevaré puesto mi distintivo de grupo (pulsera/pañoleta/gafete) para ser identificado por el coordinador.</label>
       <label class="req-check"><input type="checkbox" data-epp-key="tortuguero_8"> Sé que la actividad dura aproximadamente 1 hora (bienvenida + taller + liberación).</label>
       <label class="req-check"><input type="checkbox" data-epp-key="tortuguero_9"> Si se usa dron, entiendo que debe ser manejado por alguien con experiencia y no debe volar sobre las crías (es posible que esté prohibido por ser Área Natural Protegida).</label>
+
+      <h4 style="margin-top:18px;color:var(--accent);">🎁 Selecciona tu Kit de la Actividad</h4>
+      <div class="alert warning">⚠️ <b>Importante:</b> esta cuota de recuperación NO es la compra de una tortuga — las tortugas marinas son fauna silvestre protegida y no están en venta. Lo que eliges es tu <b>kit de recuerdo</b> por participar en la liberación, y el aporte apoya la labor de conservación de Vida Milenaria A.C. (más de 50 años protegiendo tortugas, sin apoyo gubernamental).</div>
+
+      <div class="kit-opciones">
+        <div class="kit-card" id="kitCard1" onclick="seleccionarKitTortuguero('kit1')">
+          <h4>🐢 KIT 1</h4>
+          <ul>
+            <li>📜 Certificado de adopción-liberación</li>
+            <li>☕ Taza "Yo liberé una tortuga marina"</li>
+            <li>🐢 Participación en la liberación de una tortuga bebé recién nacida</li>
+          </ul>
+        </div>
+        <div class="kit-card" id="kitCard2" onclick="seleccionarKitTortuguero('kit2')">
+          <h4>🐢 KIT 2</h4>
+          <ul>
+            <li>📜 Certificado de adopción-liberación</li>
+            <li>🧢 Cachucha "Yo liberé una tortuga marina"</li>
+            <li>🐢 Participación en la liberación de una tortuga bebé recién nacida</li>
+          </ul>
+        </div>
+      </div>
+      <div id="kitSeleccionadoBox" style="margin-top:10px;"></div>
     </div>
   </div>
 
@@ -725,6 +767,7 @@ function initFirebase() {
   escucharHospedaje();
   escucharConfigCamas();
   intentarSesionAutomatica();
+  escucharOnline();
 }
 
 function escucharConfigCamas() {
@@ -781,7 +824,8 @@ const TUGA_TIPS_POR_TAB = {
   epp: [
     "🦺 Revisa la sección de cada sede — los requisitos de calzado y vestimenta cambian entre La Corona e ICAVE.",
     "🚢 En Hutchison Ports ICAVE solo se permite el celular — nada de cámaras ni otros equipos electrónicos.",
-    "🐢 En el campamento tortuguero está prohibido tocar a las tortugas, incluso para fotos."
+    "🐢 En el campamento tortuguero está prohibido tocar a las tortugas, incluso para fotos.",
+    "🎁 No olvides elegir tu Kit (taza o cachucha) en la sección de Vida Milenaria — la cuota apoya la conservación, no es la compra de una tortuga."
   ]
 };
 let tugaIndexPorTab = { info: 0, asientos: 0, hospedaje: 0, participantes: 0 };
@@ -897,6 +941,7 @@ function actualizarEstadoSesionUI() {
     box.innerHTML = '<div class="alert success">✅ Sesión iniciada como <b>' + sesionId + '</b>. <button class="btn danger" id="logoutBtn" type="button" style="margin-top:8px;">Cerrar sesión</button></div>';
     const btn = document.getElementById("logoutBtn");
     if (btn) btn.addEventListener("click", function () {
+      quitarPresencia();
       sesionActiva = false; sesionId = null;
       localStorage.removeItem("veracruzSesion");
       actualizarEstadoSesionUI();
@@ -904,6 +949,7 @@ function actualizarEstadoSesionUI() {
     });
     if (toggleBtn) { toggleBtn.textContent = "✅ " + sesionId; toggleBtn.style.color = "var(--accent)"; }
     cargarChecklistEPP();
+    activarPresencia();
   } else {
     box.innerHTML = "";
     if (toggleBtn) { toggleBtn.textContent = "🔐 Cuenta"; toggleBtn.style.color = "var(--primary)"; }
@@ -925,6 +971,35 @@ function guardarEppRespuesta(key, valor) {
   const root = TRIP_CONFIG.firebaseRoot + "/epp_checklist/" + id;
   database.ref(root + "/" + key).set(valor);
   if (datos) database.ref(root + "/_meta").set({ nombre: datos.nombre, matricula: datos.matricula });
+}
+
+function seleccionarKitTortuguero(kit) {
+  const id = idIdentidad();
+  if (!id) { showToast("Inicia sesión (matrícula/empleado) antes de elegir tu kit"); return; }
+  if (!requiereSesion()) return;
+  const datos = datosAlumno();
+  const root = TRIP_CONFIG.firebaseRoot + "/kit_tortuguero/" + id;
+  database.ref(root).set({ kit: kit, nombre: datos ? datos.nombre : "", matricula: datos ? datos.matricula : "" }).then(function () {
+    showToast(kit === "kit1" ? "🐢 Elegiste el KIT 1 (taza)" : "🐢 Elegiste el KIT 2 (cachucha)");
+    cargarKitTortuguero();
+  });
+}
+
+function cargarKitTortuguero() {
+  const id = idIdentidad();
+  const box = document.getElementById("kitSeleccionadoBox");
+  document.querySelectorAll(".kit-card").forEach(function (c) { c.classList.remove("activo"); });
+  if (!id || !database || !box) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/kit_tortuguero/" + id).once("value").then(function (snap) {
+    const data = snap.val();
+    if (data && data.kit) {
+      const card = document.getElementById(data.kit === "kit1" ? "kitCard1" : "kitCard2");
+      if (card) card.classList.add("activo");
+      box.innerHTML = '<div class="alert success">✅ Elegiste el ' + (data.kit === "kit1" ? "KIT 1 (taza)" : "KIT 2 (cachucha)") + '. Puedes cambiarlo cuando quieras dando clic en el otro kit.</div>';
+    } else {
+      box.innerHTML = '<p style="color:#999;font-size:.85em;">Aún no has elegido tu kit.</p>';
+    }
+  });
 }
 
 function cargarChecklistEPP() {
@@ -953,10 +1028,12 @@ function mostrarReporteEPP() {
 
   Promise.all([
     database.ref(TRIP_CONFIG.firebaseRoot + "/asientos").once("value"),
-    database.ref(TRIP_CONFIG.firebaseRoot + "/epp_checklist").once("value")
+    database.ref(TRIP_CONFIG.firebaseRoot + "/epp_checklist").once("value"),
+    database.ref(TRIP_CONFIG.firebaseRoot + "/kit_tortuguero").once("value")
   ]).then(function (snaps) {
     const asientos = snaps[0].val() || {};
     const checklist = snaps[1].val() || {};
+    const kits = snaps[2].val() || {};
 
     // Un participante por identidad (usando su asiento como fuente del nombre)
     const participantes = {};
@@ -979,9 +1056,10 @@ function mostrarReporteEPP() {
       ids.forEach(function (id) {
         const respuestas = checklist[id] || {};
         const totalMarcadas = todasLasClaves.filter(function (k) { return respuestas[k]; }).length;
+        const kitTxt = kits[id] && kits[id].kit ? (kits[id].kit === "kit1" ? "🐢 Kit 1 (taza)" : "🐢 Kit 2 (cachucha)") : "sin kit elegido";
         html += '<details style="margin-bottom:8px;padding:6px 10px;">';
         html += '<summary style="cursor:pointer;display:flex;justify-content:space-between;">' +
-          '<span>' + (participantes[id] || id) + ' <code style="font-size:.75em;color:var(--muted);">[' + id + ']</code></span>' +
+          '<span>' + (participantes[id] || id) + ' <code style="font-size:.75em;color:var(--muted);">[' + id + ']</code> · ' + kitTxt + '</span>' +
           '<span>' + totalMarcadas + '/' + todasLasClaves.length + '</span></summary>';
         html += '<div style="margin-top:8px;">';
         todasLasClaves.forEach(function (k) {
@@ -1001,6 +1079,50 @@ function adminSobreescribirEpp(id, key, valor) {
   if (!isAdmin && !esCoordinador) { showToast("No tienes permiso para esto"); return; }
   database.ref(TRIP_CONFIG.firebaseRoot + "/epp_checklist/" + id + "/" + key).set(valor).then(function () {
     showToast("✏️ Respuesta corregida");
+  });
+}
+
+/* ============================================================
+   USUARIOS EN LÍNEA (presencia en tiempo real)
+   Usa la característica de "presence" de Firebase: cuando el
+   navegador se desconecta (cierra pestaña, pierde internet),
+   onDisconnect() borra automáticamente el registro.
+   ============================================================ */
+function activarPresencia() {
+  const id = idIdentidad();
+  const datos = datosAlumno();
+  if (!id || !datos || !database) return;
+  const ref = database.ref(TRIP_CONFIG.firebaseRoot + "/online/" + id);
+  ref.set({ nombre: datos.nombre, ts: firebase.database.ServerValue.TIMESTAMP });
+  ref.onDisconnect().remove();
+}
+
+function quitarPresencia() {
+  const id = idIdentidad();
+  if (!id || !database) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/online/" + id).remove();
+}
+
+function inicialesDe(nombre) {
+  const partes = (nombre || "?").trim().split(" ");
+  const a = partes[0] ? partes[0].charAt(0) : "";
+  const b = partes.length > 1 ? partes[partes.length - 1].charAt(0) : "";
+  return (a + b).toUpperCase();
+}
+
+function escucharOnline() {
+  database.ref(TRIP_CONFIG.firebaseRoot + "/online").on("value", function (snap) {
+    const data = snap.val() || {};
+    const ids = Object.keys(data);
+    const bar = document.getElementById("onlineUsersBar");
+    if (!bar) return;
+    if (ids.length === 0) { bar.innerHTML = ""; return; }
+    let html = "";
+    ids.slice(0, 12).forEach(function (uid) {
+      html += '<div class="online-avatar" title="' + data[uid].nombre + '">' + inicialesDe(data[uid].nombre) + '</div>';
+    });
+    html += '<span class="online-count">🟢 ' + ids.length + ' en línea</span>';
+    bar.innerHTML = html;
   });
 }
 
@@ -1273,6 +1395,7 @@ document.addEventListener("DOMContentLoaded", function () {
       tugaTabActual = btn.dataset.tab;
       if (btn.dataset.tab === "epp") {
         cargarChecklistEPP();
+        cargarKitTortuguero();
         mostrarReporteEPP();
       }
     });
