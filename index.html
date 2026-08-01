@@ -279,20 +279,20 @@ body{
       <label id="matriculaLabel" style="font-size:.85em;">Matrícula (U0000000N0000)</label>
       <input type="text" id="matriculaInput" placeholder="U2303057N0061" maxlength="13">
     </div>
-    <div class="form-group" id="nombreCrearGroup">
+    <div class="form-group" id="nombreCrearGroup" style="display:none;">
       <label style="font-size:.85em;">Nombre completo</label>
       <input type="text" id="nombreInput" placeholder="Nombre y apellidos">
     </div>
     <div class="form-group">
-      <label style="font-size:.85em;" id="passwordLabel">Contraseña (mín. 4 caracteres)</label>
+      <label style="font-size:.85em;" id="passwordLabel">Contraseña</label>
       <div style="position:relative;">
         <input type="password" id="passwordInput" placeholder="••••••" maxlength="30" style="padding-right:36px;">
         <button type="button" id="togglePasswordBtn" title="Mostrar/ocultar contraseña" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1em;padding:2px 4px;">👁️</button>
       </div>
     </div>
 
-    <button class="btn success" id="loginBtn" type="button" style="display:none;">🔓 Iniciar Sesión</button>
-    <button class="btn success" id="crearCuentaBtn" type="button">🔑 Crear mi Cuenta</button>
+    <button class="btn success" id="loginBtn" type="button">🔓 Iniciar Sesión</button>
+    <button class="btn success" id="crearCuentaBtn" type="button" style="display:none;">🔑 Crear mi Cuenta</button>
     <div id="sesionEstadoBox" style="margin-top:10px;"></div>
   </div>
 </div>
@@ -696,7 +696,7 @@ body{
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
 const TRIP_CONFIG = {
-  fechaSalida: "2026-08-19T20:00:00", // Miércoles noche de salida (AJUSTAR si cambia)
+  fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
   totalAsientos: 42,
   hotel: {
     habitaciones: 0,         // AÚN NO CONFIRMADO — se configura desde el panel admin cuando se sepa
