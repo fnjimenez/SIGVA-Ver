@@ -457,17 +457,31 @@ body{
           <input type="number" id="asientoEspecificoInput" min="1" max="42" placeholder="Ej. 2" style="width:100%;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #ccc;">
           <button class="btn warning" id="liberarAsientoEspecificoBtn">🔓 Liberar ese asiento</button>
         </div>
+
         <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--danger);">
-          <label style="font-weight:700;display:block;margin-bottom:6px;">🏨 Configuración de hospedaje (hotel, jueves)</label>
-          <label style="font-weight:400;font-size:.85em;">Número de habitaciones</label>
-          <input type="number" id="habitacionesInput" min="1" max="100" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
-          <label style="font-weight:400;font-size:.85em;">Camas por habitación</label>
-          <input type="number" id="camasPorHabInput" min="1" max="10" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
-          <label style="font-weight:400;font-size:.85em;">Personas por cama</label>
-          <input type="number" id="personasPorCamaInput" min="1" max="6" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
-          <button class="btn warning" id="actualizarCamasBtn">🛏️ Actualizar configuración de hospedaje</button>
-          <p style="font-size:.8em;color:var(--muted);margin-top:6px;">Los alumnos que ya eligieron cama NO se borran al cambiar estos números; solo cambia cuántas habitaciones/camas vacías se muestran.</p>
+          <label style="font-weight:700;display:block;margin-bottom:6px;">🏨 Editor de Layout de Hospedaje (casa Veracruz)</label>
+          <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Un renglón por habitación. Formato: <code>Nombre habitación | Tipo cama 1, Tipo cama 2, ...</code>. Todas las camas se asumen para 2 personas.</p>
+          <textarea id="layoutTextarea" rows="9" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ccc;font-family:monospace;font-size:.8em;"></textarea>
+          <button class="btn warning" id="guardarLayoutBtn" style="margin-top:8px;">💾 Guardar Layout</button>
+          <p style="font-size:.75em;color:var(--muted);margin-top:6px;">⚠️ Los alumnos que ya eligieron cama NO se borran al cambiar el layout, pero si quitas una habitación/cama donde alguien ya estaba, su registro queda huérfano — revisa antes de quitar algo ocupado.</p>
         </div>
+
+        <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--danger);">
+          <label style="font-weight:700;display:block;margin-bottom:6px;">🗂️ Pares de Cama Provisionales (antiguos, ya no se usan)</label>
+          <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Quedaron de cuando aún no se confirmaba la casa. Úsalos solo como referencia para reubicar manualmente a esas parejas en las camas reales.</p>
+          <div id="paresViejosBox"></div>
+          <button class="btn danger" id="limpiarParesViejosBtn" style="margin-top:8px;">🗑️ Borrar todos los pares provisionales</button>
+        </div>
+      </div>
+
+      <div id="pagoCompletoBox" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--danger);">
+        <label style="font-weight:700;display:block;margin-bottom:6px;">💰 Verificar Pago Completo (Admin/Coordinadores)</label>
+        <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Un alumno NO puede elegir/jalar cama hasta que aquí se registre la fecha en que cubrió el 100% del costo del viaje.</p>
+        <input type="text" id="pagoMatriculaInput" placeholder="Matrícula/empleado del alumno" style="width:100%;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #ccc;">
+        <input type="date" id="pagoFechaInput" style="width:100%;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #ccc;">
+        <button class="btn success" id="guardarPagoBtn">✅ Registrar Pago Completo</button>
+        <button class="btn danger" id="quitarPagoBtn" style="margin-top:6px;">🗑️ Quitar verificación (si fue error)</button>
+        <div id="listaPagosBox" style="margin-top:10px;"></div>
       </div>
     </div>
   </div>
@@ -699,9 +713,18 @@ const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
   totalAsientos: 42,
   hotel: {
-    habitaciones: 0,         // AÚN NO CONFIRMADO — se configura desde el panel admin cuando se sepa
-    camasPorHabitacion: 0,   // AÚN NO CONFIRMADO
-    personasPorCama: 2       // personas por cama (ej. 2 = pareja/matrimonial, 1 = individual)
+    // Layout REAL de la casa reservada en Veracruz (Airbnb/casa completa).
+    // Cada habitación tiene sus propias camas con su tipo y capacidad.
+    layout: [
+      { nombre: "🛏️ Recámara 1 (abajo)", camas: [{ tipo: "Matrimonial", capacidad: 2 }] },
+      { nombre: "🛏️ Recámara 2 (abajo)", camas: [{ tipo: "Matrimonial", capacidad: 2 }, { tipo: "Matrimonial", capacidad: 2 }] },
+      { nombre: "🛏️ Recámara 3 (arriba)", camas: [{ tipo: "King", capacidad: 2 }] },
+      { nombre: "🛏️ Recámara 4 (arriba)", camas: [{ tipo: "Queen", capacidad: 2 }, { tipo: "Queen", capacidad: 2 }] },
+      { nombre: "🛏️ Recámara 5 (arriba)", camas: [{ tipo: "Matrimonial", capacidad: 2 }, { tipo: "Matrimonial", capacidad: 2 }] },
+      { nombre: "🛋️ Descanso (arriba)", camas: [{ tipo: "Matrimonial", capacidad: 2 }] },
+      { nombre: "🛋️ Sala de estar", camas: [{ tipo: "Sofá-cama King", capacidad: 2 }, { tipo: "Sofá-cama Queen", capacidad: 2 }] },
+      { nombre: "🛌 Colchonetas dobles (espacio libre en cuartos/pasillos)", camas: [{ tipo: "Colchoneta doble", capacidad: 2 }, { tipo: "Colchoneta doble", capacidad: 2 }, { tipo: "Colchoneta doble", capacidad: 2 }, { tipo: "Colchoneta doble", capacidad: 2 }] }
+    ]
   },
   campamento: {
     // Tanto "casa propia" como "Glamping" ahora funcionan igual:
@@ -772,28 +795,10 @@ function initFirebase() {
   });
 
   escucharAsientos();
+  escucharLayoutHotel();
   escucharHospedaje();
-  escucharConfigCamas();
   intentarSesionAutomatica();
   escucharOnline();
-}
-
-function escucharConfigCamas() {
-  database.ref(TRIP_CONFIG.firebaseRoot + "/config/hotel").on("value", function (snap) {
-    const val = snap.val();
-    if (val) {
-      TRIP_CONFIG.hotel.habitaciones = val.habitaciones || TRIP_CONFIG.hotel.habitaciones;
-      TRIP_CONFIG.hotel.camasPorHabitacion = val.camasPorHabitacion || TRIP_CONFIG.hotel.camasPorHabitacion;
-      TRIP_CONFIG.hotel.personasPorCama = val.personasPorCama || TRIP_CONFIG.hotel.personasPorCama;
-    }
-    const iH = document.getElementById("habitacionesInput");
-    const iC = document.getElementById("camasPorHabInput");
-    const iP = document.getElementById("personasPorCamaInput");
-    if (iH) iH.value = TRIP_CONFIG.hotel.habitaciones;
-    if (iC) iC.value = TRIP_CONFIG.hotel.camasPorHabitacion;
-    if (iP) iP.value = TRIP_CONFIG.hotel.personasPorCama;
-    if (nocheActual === "hotel") renderHospedaje();
-  });
 }
 
 /* ============================================================
@@ -1507,10 +1512,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if (pass === TRIP_CONFIG.adminPassword) {
       isAdmin = true;
       document.getElementById("adminControls").style.display = "block";
+      document.getElementById("pagoCompletoBox").style.display = "block";
       const docsBox = document.getElementById("adminDocsBox");
       if (docsBox) docsBox.style.display = "block";
       showToast("🔓 Acceso admin concedido");
       mostrarReporteEPP();
+      mostrarParesViejos();
+      mostrarListaPagos();
+      renderHospedaje();
     } else {
       showToast("❌ Contraseña incorrecta");
     }
@@ -1521,9 +1530,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (pass === TRIP_CONFIG.coordinadorPassword) {
       esCoordinador = true;
       document.getElementById("adminDocsBox").style.display = "block";
+      document.getElementById("pagoCompletoBox").style.display = "block";
       document.getElementById("coordAccesoCard").style.display = "none";
       showToast("🔓 Acceso a documentación concedido");
       mostrarReporteEPP();
+      mostrarListaPagos();
     } else {
       showToast("❌ Contraseña incorrecta");
     }
@@ -1544,19 +1555,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  document.getElementById("actualizarCamasBtn").addEventListener("click", function () {
-    const habitaciones = parseInt(document.getElementById("habitacionesInput").value, 10);
-    const camasPorHabitacion = parseInt(document.getElementById("camasPorHabInput").value, 10);
-    const personasPorCama = parseInt(document.getElementById("personasPorCamaInput").value, 10);
-    if (!habitaciones || !camasPorHabitacion || !personasPorCama) { showToast("Completa los 3 valores de hospedaje"); return; }
-    database.ref(TRIP_CONFIG.firebaseRoot + "/config/hotel").set({
-      habitaciones: habitaciones,
-      camasPorHabitacion: camasPorHabitacion,
-      personasPorCama: personasPorCama
-    }).then(function () {
-      showToast("🛏️ Configuración de hospedaje actualizada");
-    });
-  });
+  document.getElementById("guardarLayoutBtn").addEventListener("click", guardarLayoutHotel);
+  document.getElementById("limpiarParesViejosBtn").addEventListener("click", limpiarParesViejos);
+  document.getElementById("guardarPagoBtn").addEventListener("click", guardarPagoCompleto);
+  document.getElementById("quitarPagoBtn").addEventListener("click", quitarPagoCompleto);
 
   buildBusMap();
   renderHospedaje();
@@ -1765,21 +1767,152 @@ function renderHospedaje() {
   else renderCampamento();
 }
 
-function claveCama(hab, cama) { return "h" + hab + "_c" + cama; }
+/* ============================================================
+   EDITOR DE LAYOUT DE HOSPEDAJE (admin)
+   Formato de texto simple: "Nombre habitación | Tipo1, Tipo2"
+   Se guarda en Firebase para que persista sin editar el código.
+   ============================================================ */
+function layoutATexto(layout) {
+  return layout.map(function (room) {
+    return room.nombre + " | " + room.camas.map(function (c) { return c.tipo; }).join(", ");
+  }).join("\n");
+}
+
+function textoALayout(texto) {
+  return texto.split("\n").map(function (linea) { return linea.trim(); }).filter(Boolean).map(function (linea) {
+    const partes = linea.split("|");
+    const nombre = (partes[0] || "").trim();
+    const tipos = (partes[1] || "").split(",").map(function (t) { return t.trim(); }).filter(Boolean);
+    return { nombre: nombre, camas: tipos.map(function (tipo) { return { tipo: tipo, capacidad: 2 }; }) };
+  }).filter(function (room) { return room.nombre && room.camas.length; });
+}
+
+function escucharLayoutHotel() {
+  database.ref(TRIP_CONFIG.firebaseRoot + "/config/hotelLayout").on("value", function (snap) {
+    const val = snap.val();
+    if (val && Array.isArray(val) && val.length) {
+      TRIP_CONFIG.hotel.layout = val;
+    }
+    const textarea = document.getElementById("layoutTextarea");
+    if (textarea) textarea.value = layoutATexto(TRIP_CONFIG.hotel.layout);
+    if (nocheActual === "hotel") renderHospedaje();
+  });
+}
+
+function guardarLayoutHotel() {
+  if (!isAdmin) { showToast("Solo el administrador puede hacer esto"); return; }
+  const texto = document.getElementById("layoutTextarea").value;
+  const nuevoLayout = textoALayout(texto);
+  if (!nuevoLayout.length) { showToast("El layout no puede quedar vacío"); return; }
+  database.ref(TRIP_CONFIG.firebaseRoot + "/config/hotelLayout").set(nuevoLayout).then(function () {
+    showToast("💾 Layout de hospedaje actualizado");
+  });
+}
+
+function mostrarParesViejos() {
+  const box = document.getElementById("paresViejosBox");
+  if (!box || !database) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pares_cama_provisional").once("value").then(function (snap) {
+    const pares = snap.val() || {};
+    const ids = Object.keys(pares);
+    if (!ids.length) { box.innerHTML = '<p style="color:#999;font-size:.85em;">No hay pares provisionales guardados.</p>'; return; }
+    let html = "";
+    ids.forEach(function (id) {
+      const p = pares[id];
+      const respNombre = p.responsable && p.responsable.nombre ? p.responsable.nombre : "(sin responsable)";
+      const miembros = p.miembros ? Object.values(p.miembros).map(function (m) { return m.nombre; }).join(", ") : "";
+      html += '<div class="participant-row"><span>👑 ' + respNombre + (miembros ? ' + ' + miembros : ' (sin pareja)') + '</span></div>';
+    });
+    box.innerHTML = html;
+  });
+}
+
+function limpiarParesViejos() {
+  if (!isAdmin) { showToast("Solo el administrador puede hacer esto"); return; }
+  if (!confirm("¿Borrar TODOS los pares de cama provisionales? Ya no se pueden recuperar.")) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pares_cama_provisional").remove().then(function () {
+    showToast("🗑️ Pares provisionales borrados");
+    mostrarParesViejos();
+  });
+}
+
+/* ============================================================
+   VERIFICACIÓN DE PAGO COMPLETO (solo admin/coordinadores)
+   Un alumno solo puede elegir/jalar cama si aquí existe su
+   fecha de pago completo, capturada por un coordinador.
+   ============================================================ */
+function guardarPagoCompleto() {
+  if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
+  const id = document.getElementById("pagoMatriculaInput").value.trim().toUpperCase();
+  const fecha = document.getElementById("pagoFechaInput").value;
+  if (!id) { showToast("Escribe la matrícula/empleado del alumno"); return; }
+  if (!fecha) { showToast("Elige la fecha de pago completo"); return; }
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + id).set({
+    fecha: fecha,
+    verificadoPor: sesionId || "admin"
+  }).then(function () {
+    showToast("✅ Pago completo registrado para " + id);
+    document.getElementById("pagoMatriculaInput").value = "";
+    document.getElementById("pagoFechaInput").value = "";
+    mostrarListaPagos();
+  });
+}
+
+function quitarPagoCompleto() {
+  if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
+  const id = document.getElementById("pagoMatriculaInput").value.trim().toUpperCase();
+  if (!id) { showToast("Escribe la matrícula/empleado del alumno a quitar"); return; }
+  if (!confirm("¿Quitar la verificación de pago completo de " + id + "?")) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + id).remove().then(function () {
+    showToast("Verificación quitada para " + id);
+    mostrarListaPagos();
+  });
+}
+
+function mostrarListaPagos() {
+  const box = document.getElementById("listaPagosBox");
+  if (!box || !database) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo").once("value").then(function (snap) {
+    const data = snap.val() || {};
+    const ids = Object.keys(data);
+    if (!ids.length) { box.innerHTML = '<p style="color:#999;font-size:.85em;">Nadie tiene pago completo verificado todavía.</p>'; return; }
+    let html = '<p style="font-size:.8em;font-weight:700;margin-bottom:4px;">✅ Pagos verificados (' + ids.length + '):</p>';
+    ids.forEach(function (id) {
+      html += '<div class="participant-row"><span>' + id + '</span><span style="font-size:.85em;">' + data[id].fecha + '</span></div>';
+    });
+    box.innerHTML = html;
+  });
+}
+
+function claveCamaLayout(hab, cama) { return "h" + hab + "_c" + cama; }
+
+function getCamaLayoutInfo(key) {
+  const m = key.match(/^h(\d+)_c(\d+)$/);
+  if (!m) return null;
+  const room = TRIP_CONFIG.hotel.layout[parseInt(m[1], 10) - 1];
+  if (!room) return null;
+  const cama = room.camas[parseInt(m[2], 10) - 1];
+  if (!cama) return null;
+  return { habitacion: room.nombre, tipo: cama.tipo, capacidad: cama.capacidad };
+}
 
 function renderCamas() {
   const cont = document.getElementById("hospedajeContenido");
-  const cfg = TRIP_CONFIG.hotel;
+  const layout = TRIP_CONFIG.hotel.layout;
 
-  if (!cfg.habitaciones || !cfg.camasPorHabitacion) {
-    renderParesProvisional();
-    return;
-  }
-
-  database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel").once("value").then(function (snap) {
-    const camas = snap.val() || {};
+  Promise.all([
+    database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel").once("value"),
+    database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + idIdentidad()).once("value")
+  ]).then(function (snaps) {
+    const camas = snaps[0].val() || {};
+    const miPago = snaps[1].val();
     let html = '<h3>🏨 Selecciona tu cama</h3>';
-    html += '<p style="font-size:.85em;color:var(--muted);margin-bottom:8px;">' + cfg.habitaciones + ' habitaciones · ' + cfg.camasPorHabitacion + ' camas por habitación · ' + cfg.personasPorCama + ' personas por cama</p>';
+    html += '<p style="font-size:.85em;color:var(--muted);margin-bottom:8px;">Casa de hospedaje ya reservada en Veracruz — elige la cama exacta donde te vas a quedar.</p>';
+    if (miPago && miPago.fecha) {
+      html += '<div class="alert success">✅ Pago completo verificado el ' + miPago.fecha + '. Ya puedes elegir/jalar tu cama.</div>';
+    } else {
+      html += '<div class="alert danger">⚠️ Tu pago completo del viaje aún NO ha sido verificado por los coordinadores. No podrás elegir ni jalar cama hasta que lo confirmen.</div>';
+    }
     html += '<div class="legend">';
     html += '<span><span class="box" style="background:var(--primary-light)"></span>Disponible</span>';
     html += '<span><span class="box" style="background:#c9852c"></span>Con espacio · únete</span>';
@@ -1787,25 +1920,33 @@ function renderCamas() {
     html += '</div>';
 
     let miCama = null;
-    for (let h = 1; h <= cfg.habitaciones; h++) {
+    layout.forEach(function (room, hIdx) {
+      const h = hIdx + 1;
       html += '<div class="card" style="box-shadow:none;border:1px solid var(--border);margin-top:12px;">';
-      html += '<h3>🚪 Habitación ' + h + '</h3>';
+      html += '<h3>' + room.nombre + '</h3>';
       html += '<div class="beds-grid">';
-      for (let c = 1; c <= cfg.camasPorHabitacion; c++) {
-        const key = claveCama(h, c);
+      room.camas.forEach(function (camaTipo, cIdx) {
+        const c = cIdx + 1;
+        const key = claveCamaLayout(h, c);
         const cama = camas[key];
         const miembros = cama && cama.miembros ? Object.values(cama.miembros) : [];
+        const capacidad = camaTipo.capacidad;
         let clase = "bed";
-        if (miembros.length > 0 && miembros.length < cfg.personasPorCama) clase += " parcial";
-        if (miembros.length >= cfg.personasPorCama) clase += " completa";
+        if (miembros.length > 0 && miembros.length < capacidad) clase += " parcial";
+        if (miembros.length >= capacidad) clase += " completa";
         if (cama && cama.miembros && cama.miembros[idIdentidad()]) { clase += " mia"; miCama = key; }
         const who = miembros.map(function (m) { return m.nombre.split(" ")[0]; }).join(" / ");
-        html += '<div class="' + clase + '" onclick="seleccionarCama(\'' + key + '\')"><span class="n">🛏️ ' + c + '</span><span class="who">' + miembros.length + '/' + cfg.personasPorCama + (who ? ' · ' + who : '') + '</span></div>';
-      }
+        html += '<div class="' + clase + '" onclick="seleccionarCama(\'' + key + '\')"><span class="n">🛏️ ' + camaTipo.tipo + '</span><span class="who">' + miembros.length + '/' + capacidad + (who ? ' · ' + who : '') + '</span></div>';
+      });
       html += '</div></div>';
-    }
+    });
 
     if (miCama) {
+      const camaObj = camas[miCama];
+      const miembrosActuales = camaObj && camaObj.miembros ? Object.values(camaObj.miembros) : [];
+      const infoMia = getCamaLayoutInfo(miCama);
+      const capMia = infoMia ? infoMia.capacidad : 2;
+      html += '<div id="miCamaExtra" data-cama-key="' + miCama + '" data-capacidad="' + capMia + '"></div>';
       html += '<button class="btn danger" onclick="salirCama(\'' + miCama + '\')" style="margin-top:14px;">🚪 Salir de mi cama actual</button>';
     }
 
@@ -1816,7 +1957,9 @@ function renderCamas() {
         html += '<h3 style="color:var(--danger);">🔐 (Admin) Camas de Hotel — TODAS las ocupadas (' + ocupadas.length + ')</h3>';
         ocupadas.forEach(function (key) {
           const nombres = Object.values(camas[key].miembros).map(function (m) { return m.nombre; }).join(", ");
-          html += '<div class="participant-row"><span>' + key.replace(/^h(\d+)_c(\d+)$/, "Hab. $1 · Cama $2") + ' — ' + nombres + '</span>' +
+          const info = getCamaLayoutInfo(key);
+          const etiqueta = info ? (info.habitacion + " · " + info.tipo) : key;
+          html += '<div class="participant-row"><span>' + etiqueta + ' — ' + nombres + '</span>' +
             '<button class="btn danger" onclick="adminVaciarCama(\'' + key + '\')" style="width:auto;padding:6px 14px;">🗑️</button></div>';
         });
         html += '</div>';
@@ -1824,6 +1967,81 @@ function renderCamas() {
     }
 
     cont.innerHTML = html;
+    renderJalarCompaneroCama();
+  });
+}
+
+function renderJalarCompaneroCama() {
+  const div = document.getElementById("miCamaExtra");
+  if (!div) return;
+  const key = div.dataset.camaKey;
+  const capacidad = parseInt(div.dataset.capacidad, 10);
+
+  database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel/" + key + "/miembros").once("value").then(function (snap) {
+    const miembros = snap.val() || {};
+    const ocupados = Object.keys(miembros).length;
+    if (ocupados >= capacidad) { div.innerHTML = ""; return; }
+
+    let html = '<div class="form-group" style="margin-top:10px;">';
+    html += '<label>➕ Jalar a un compañero ya registrado (matrícula/empleado)</label>';
+    html += '<input type="text" id="jalarCamaMatricula" placeholder="U2303057N0061 o EMP-1234" style="margin-bottom:6px;">';
+    html += '<input type="text" id="jalarCamaNombre" placeholder="Nombre completo">';
+    html += '</div>';
+    html += '<button class="btn success" onclick="jalarCompaneroCamaHotel(\'' + key + '\')">Agregar a mi cama</button>';
+    html += '<div id="sugerenciaParejaBox" style="margin-top:8px;"></div>';
+    div.innerHTML = html;
+
+    // Sugerir pareja anterior (de cuando aún no se confirmaba la casa)
+    database.ref(TRIP_CONFIG.firebaseRoot + "/pares_cama_provisional").once("value").then(function (paresSnap) {
+      const pares = paresSnap.val() || {};
+      let sugerido = null;
+      Object.values(pares).forEach(function (p) {
+        if (p.responsable && p.responsable.usuario === idIdentidad() && p.miembros) {
+          const otro = Object.values(p.miembros)[0];
+          if (otro) sugerido = { usuario: Object.keys(p.miembros)[0], nombre: otro.nombre };
+        }
+        if (p.miembros && p.miembros[idIdentidad()] && p.responsable) {
+          sugerido = { usuario: p.responsable.usuario, nombre: p.responsable.nombre };
+        }
+      });
+      const sugBox = document.getElementById("sugerenciaParejaBox");
+      if (sugerido && sugBox) {
+        sugBox.innerHTML = '<button class="btn warning" type="button" onclick="usarParejaSugerida(\'' + key + '\', \'' + sugerido.usuario + '\', \'' + sugerido.nombre.replace(/'/g, "\\'") + '\')">🔗 Jalar a mi pareja anterior: ' + sugerido.nombre + '</button>';
+      }
+    });
+  });
+}
+
+function usarParejaSugerida(key, uid, nombre) {
+  document.getElementById("jalarCamaMatricula").value = uid;
+  document.getElementById("jalarCamaNombre").value = nombre;
+  jalarCompaneroCamaHotel(key);
+}
+
+function jalarCompaneroCamaHotel(key) {
+  if (!requiereSesion()) return;
+  const uid = document.getElementById("jalarCamaMatricula").value.trim().toUpperCase();
+  const nombre = document.getElementById("jalarCamaNombre").value.trim();
+  if (!nombre) { showToast("Escribe el nombre completo de tu compañero(a)"); return; }
+  if (!uid) { showToast("Escribe la matrícula o número de empleado de tu compañero(a)"); return; }
+  const info = getCamaLayoutInfo(key);
+  const capacidad = info ? info.capacidad : 2;
+
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + idIdentidad()).once("value").then(function (pagoSnap) {
+    const pago = pagoSnap.val();
+    if (!pago || !pago.fecha) {
+      showToast("⚠️ Tu pago completo debe ser verificado por los coordinadores antes de agregar compañeros.");
+      return;
+    }
+    const ref = database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel/" + key + "/miembros");
+    ref.once("value").then(function (snap) {
+      const miembros = snap.val() || {};
+      if (Object.keys(miembros).length >= capacidad) { showToast("Esa cama ya está completa"); return; }
+      ref.child(uid).set({ nombre: nombre, matricula: uid }).then(function () {
+        showToast("✅ " + nombre + " agregado(a) a tu cama");
+        renderHospedaje();
+      });
+    });
   });
 }
 
@@ -2060,24 +2278,34 @@ function seleccionarCama(key) {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
   if (!datos) { showToast("Completa tu matrícula y nombre en la pestaña de Asientos primero"); return; }
+  const info = getCamaLayoutInfo(key);
+  const capacidad = info ? info.capacidad : 2;
 
-  const ref = database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel/" + key + "/miembros");
-  ref.once("value").then(function (snap) {
-    const miembros = snap.val() || {};
-    if (miembros[idIdentidad()]) { showToast("Ya estás en esta cama"); return; }
-    if (Object.keys(miembros).length >= TRIP_CONFIG.hotel.personasPorCama) { showToast("Esa cama ya está completa"); return; }
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + idIdentidad()).once("value").then(function (pagoSnap) {
+    const pago = pagoSnap.val();
+    if (!pago || !pago.fecha) {
+      showToast("⚠️ Aún no puedes elegir cama — tu pago completo del viaje debe ser verificado por los coordinadores primero.");
+      return;
+    }
 
-    // Salir de cualquier otra cama antes de unirse a la nueva
-    database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel").once("value").then(function (allSnap) {
-      const all = allSnap.val() || {};
-      const tareas = [];
-      Object.keys(all).forEach(function (k) {
-        if (all[k].miembros && all[k].miembros[idIdentidad()] && k !== key) {
-          tareas.push(database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel/" + k + "/miembros/" + idIdentidad()).remove());
-        }
+    const ref = database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel/" + key + "/miembros");
+    ref.once("value").then(function (snap) {
+      const miembros = snap.val() || {};
+      if (miembros[idIdentidad()]) { showToast("Ya estás en esta cama"); return; }
+      if (Object.keys(miembros).length >= capacidad) { showToast("Esa cama ya está completa"); return; }
+
+      // Salir de cualquier otra cama antes de unirse a la nueva
+      database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel").once("value").then(function (allSnap) {
+        const all = allSnap.val() || {};
+        const tareas = [];
+        Object.keys(all).forEach(function (k) {
+          if (all[k].miembros && all[k].miembros[idIdentidad()] && k !== key) {
+            tareas.push(database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel/" + k + "/miembros/" + idIdentidad()).remove());
+          }
+        });
+        tareas.push(ref.child(idIdentidad()).set({ nombre: datos.nombre, matricula: datos.matricula }));
+        Promise.all(tareas).then(function () { showToast("🛏️ Cama reservada"); renderHospedaje(); });
       });
-      tareas.push(ref.child(idIdentidad()).set({ nombre: datos.nombre, matricula: datos.matricula }));
-      Promise.all(tareas).then(function () { showToast("🛏️ Cama reservada"); renderHospedaje(); });
     });
   });
 }
