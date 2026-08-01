@@ -474,6 +474,20 @@ body{
         </div>
       </div>
 
+      <div id="asignarCamaBox" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--danger);">
+        <label style="font-weight:700;display:block;margin-bottom:6px;">🔧 Asignar Cama Directamente (Admin/Coordinadores)</label>
+        <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Elige la cama y agrega hasta 2 personas — se asignan sin que ellos tengan que hacer nada, y sin requerir pago verificado (es una asignación manual tuya).</p>
+        <label style="font-size:.8em;">Cama</label>
+        <select id="asignarCamaSelect" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;"></select>
+        <label style="font-size:.8em;">Persona 1 — matrícula/empleado</label>
+        <input type="text" id="asignarP1Matricula" placeholder="U2303057N0061" style="width:100%;padding:8px;margin-bottom:4px;border-radius:8px;border:1px solid #ccc;">
+        <input type="text" id="asignarP1Nombre" placeholder="Nombre completo" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
+        <label style="font-size:.8em;">Persona 2 (opcional) — matrícula/empleado</label>
+        <input type="text" id="asignarP2Matricula" placeholder="U2303057N0061" style="width:100%;padding:8px;margin-bottom:4px;border-radius:8px;border:1px solid #ccc;">
+        <input type="text" id="asignarP2Nombre" placeholder="Nombre completo" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
+        <button class="btn success" id="asignarCamaBtn">✅ Asignar Cama</button>
+      </div>
+
       <div id="pagoCompletoBox" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--danger);">
         <label style="font-weight:700;display:block;margin-bottom:6px;">💰 Verificar Pago Completo (Admin/Coordinadores)</label>
         <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Un alumno NO puede elegir/jalar cama hasta que aquí se registre la fecha en que cubrió el 100% del costo del viaje.</p>
@@ -1513,6 +1527,8 @@ document.addEventListener("DOMContentLoaded", function () {
       isAdmin = true;
       document.getElementById("adminControls").style.display = "block";
       document.getElementById("pagoCompletoBox").style.display = "block";
+      document.getElementById("asignarCamaBox").style.display = "block";
+      poblarSelectCamas();
       const docsBox = document.getElementById("adminDocsBox");
       if (docsBox) docsBox.style.display = "block";
       showToast("🔓 Acceso admin concedido");
@@ -1531,6 +1547,8 @@ document.addEventListener("DOMContentLoaded", function () {
       esCoordinador = true;
       document.getElementById("adminDocsBox").style.display = "block";
       document.getElementById("pagoCompletoBox").style.display = "block";
+      document.getElementById("asignarCamaBox").style.display = "block";
+      poblarSelectCamas();
       document.getElementById("coordAccesoCard").style.display = "none";
       showToast("🔓 Acceso a documentación concedido");
       mostrarReporteEPP();
@@ -1559,6 +1577,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("limpiarParesViejosBtn").addEventListener("click", limpiarParesViejos);
   document.getElementById("guardarPagoBtn").addEventListener("click", guardarPagoCompleto);
   document.getElementById("quitarPagoBtn").addEventListener("click", quitarPagoCompleto);
+  document.getElementById("asignarCamaBtn").addEventListener("click", asignarCamaDirecta);
 
   buildBusMap();
   renderHospedaje();
@@ -1820,8 +1839,14 @@ function mostrarParesViejos() {
     ids.forEach(function (id) {
       const p = pares[id];
       const respNombre = p.responsable && p.responsable.nombre ? p.responsable.nombre : "(sin responsable)";
-      const miembros = p.miembros ? Object.values(p.miembros).map(function (m) { return m.nombre; }).join(", ") : "";
-      html += '<div class="participant-row"><span>👑 ' + respNombre + (miembros ? ' + ' + miembros : ' (sin pareja)') + '</span></div>';
+      const respId = p.responsable ? p.responsable.usuario : "";
+      const miembroEntry = p.miembros ? Object.entries(p.miembros)[0] : null;
+      const miembroId = miembroEntry ? miembroEntry[0] : "";
+      const miembroNombre = miembroEntry ? miembroEntry[1].nombre : "";
+      html += '<div class="participant-row" style="flex-direction:column;align-items:flex-start;gap:4px;">' +
+        '<span>👑 ' + respNombre + (miembroNombre ? ' + ' + miembroNombre : ' (sin pareja)') + '</span>' +
+        '<button class="btn warning" style="width:auto;padding:5px 12px;font-size:.8em;" onclick="asignarParAUnaCama(\'' + respId + '\', \'' + respNombre.replace(/'/g, "\\'") + '\', \'' + miembroId + '\', \'' + miembroNombre.replace(/'/g, "\\'") + '\')">📥 Cargar en Asignar Cama</button>' +
+        '</div>';
     });
     box.innerHTML = html;
   });
@@ -1866,6 +1891,62 @@ function quitarPagoCompleto() {
   database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + id).remove().then(function () {
     showToast("Verificación quitada para " + id);
     mostrarListaPagos();
+  });
+}
+
+/* ============================================================
+   ASIGNACIÓN DIRECTA DE CAMAS (admin/coordinadores)
+   ============================================================ */
+function poblarSelectCamas() {
+  const select = document.getElementById("asignarCamaSelect");
+  if (!select) return;
+  select.innerHTML = "";
+  TRIP_CONFIG.hotel.layout.forEach(function (room, hIdx) {
+    room.camas.forEach(function (cama, cIdx) {
+      const key = claveCamaLayout(hIdx + 1, cIdx + 1);
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = room.nombre.replace(/[^\w\s()áéíóúÁÉÍÓÚñÑ]/g, "").trim() + " · " + cama.tipo;
+      select.appendChild(opt);
+    });
+  });
+}
+
+function asignarParAUnaCama(respId, respNombre, miembroId, miembroNombre) {
+  document.getElementById("asignarP1Matricula").value = respId;
+  document.getElementById("asignarP1Nombre").value = respNombre;
+  document.getElementById("asignarP2Matricula").value = miembroId || "";
+  document.getElementById("asignarP2Nombre").value = miembroNombre || "";
+  showToast("📥 Datos del par cargados abajo en 'Asignar Cama Directamente' — elige la cama y confirma");
+}
+
+function asignarCamaDirecta() {
+  if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
+  const key = document.getElementById("asignarCamaSelect").value;
+  const p1id = document.getElementById("asignarP1Matricula").value.trim().toUpperCase();
+  const p1nombre = document.getElementById("asignarP1Nombre").value.trim();
+  const p2id = document.getElementById("asignarP2Matricula").value.trim().toUpperCase();
+  const p2nombre = document.getElementById("asignarP2Nombre").value.trim();
+  if (!key) { showToast("Elige una cama"); return; }
+  if (!p1id || !p1nombre) { showToast("Completa al menos a la Persona 1 (matrícula y nombre)"); return; }
+
+  const info = getCamaLayoutInfo(key);
+  const capacidad = info ? info.capacidad : 2;
+  const personas = [{ id: p1id, nombre: p1nombre }];
+  if (p2id && p2nombre) personas.push({ id: p2id, nombre: p2nombre });
+
+  if (personas.length > capacidad) { showToast("Esa cama solo tiene capacidad para " + capacidad); return; }
+
+  const tareas = personas.map(function (p) {
+    return database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel/" + key + "/miembros/" + p.id).set({ nombre: p.nombre, matricula: p.id });
+  });
+  Promise.all(tareas).then(function () {
+    showToast("✅ Cama asignada correctamente");
+    document.getElementById("asignarP1Matricula").value = "";
+    document.getElementById("asignarP1Nombre").value = "";
+    document.getElementById("asignarP2Matricula").value = "";
+    document.getElementById("asignarP2Nombre").value = "";
+    renderHospedaje();
   });
 }
 
