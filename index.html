@@ -276,9 +276,6 @@ body{
     </div>
 
     <div class="form-group">
-      <label><input type="checkbox" id="esPersonalCheck"> Soy personal / coordinador</label>
-    </div>
-    <div class="form-group">
       <label id="matriculaLabel" style="font-size:.85em;">Matrícula (U0000000N0000)</label>
       <input type="text" id="matriculaInput" placeholder="U2303057N0061" maxlength="13">
     </div>
@@ -446,6 +443,9 @@ body{
 
     <div id="miAsientoBox" style="margin-top:16px;"></div>
 
+    <p style="font-size:.72em;color:var(--muted);margin-bottom:6px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="esPersonalCheck" style="width:auto;vertical-align:middle;"> Soy Personal SABES</label>
+    </p>
     <div class="admin-box" id="adminBox">
       <h3>🔐 Panel Administrador</h3>
       <input type="password" id="adminPass" placeholder="Contraseña admin" style="width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc;">
@@ -946,7 +946,10 @@ function actualizarEstadoSesionUI() {
   const toggleBtn = document.getElementById("cuentaToggleBtn");
   if (!box) return;
   if (estaLogueado()) {
-    box.innerHTML = '<div class="alert success">✅ Sesión iniciada como <b>' + sesionId + '</b>. <button class="btn danger" id="logoutBtn" type="button" style="margin-top:8px;">Cerrar sesión</button></div>';
+    const nombreInput = document.getElementById("nombreInput");
+    const nombre = nombreInput && nombreInput.value.trim() ? nombreInput.value.trim() : "";
+    const etiqueta = sesionId + (nombre ? " — " + nombre : "");
+    box.innerHTML = '<div class="alert success">✅ Sesión iniciada como <b>' + etiqueta + '</b>. <button class="btn danger" id="logoutBtn" type="button" style="margin-top:8px;">Cerrar sesión</button></div>';
     const btn = document.getElementById("logoutBtn");
     if (btn) btn.addEventListener("click", function () {
       quitarPresencia();
@@ -955,7 +958,7 @@ function actualizarEstadoSesionUI() {
       actualizarEstadoSesionUI();
       showToast("Sesión cerrada");
     });
-    if (toggleBtn) { toggleBtn.textContent = "✅ " + sesionId; toggleBtn.style.color = "var(--accent)"; }
+    if (toggleBtn) { toggleBtn.textContent = "✅ " + etiqueta; toggleBtn.style.color = "var(--accent)"; }
     cargarChecklistEPP();
     activarPresencia();
   } else {
