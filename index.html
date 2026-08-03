@@ -1553,7 +1553,8 @@ document.addEventListener("DOMContentLoaded", function () {
       input.placeholder = "U2303057N0061";
       input.maxLength = 13;
     }
-    input.value = "";
+    // Ya NO se borra el valor: si ya hay sesión iniciada, borrar el campo
+    // aquí rompía silenciosamente la identidad del usuario en toda la app.
   });
 
   document.getElementById("corregirNombreBtn").addEventListener("click", corregirNombreEnTodosLados);
@@ -2334,7 +2335,7 @@ function renderParesProvisional() {
 function crearParProvisional() {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre en la pestaña de Asientos primero"); return; }
+  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
 
   const ref = database.ref(TRIP_CONFIG.firebaseRoot + "/pares_cama_provisional").push();
   ref.set({
@@ -2350,7 +2351,7 @@ function crearParProvisional() {
 function unirseParProvisional(id) {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre en la pestaña de Asientos primero"); return; }
+  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
   database.ref(TRIP_CONFIG.firebaseRoot + "/pares_cama_provisional/" + id + "/miembros/" + idIdentidad()).set({
     nombre: datos.nombre, matricula: datos.matricula
   }).then(function () {
@@ -2421,7 +2422,7 @@ function adminEliminarParProvisional(id) {
 function seleccionarCama(key) {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre en la pestaña de Asientos primero"); return; }
+  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
   const info = getCamaLayoutInfo(key);
   const capacidad = info ? info.capacidad : 2;
 
@@ -2678,7 +2679,7 @@ function mostrarDiferencialGlamping() {
 function crearGlamping() {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre en la pestaña de Asientos primero"); return; }
+  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
   const select = document.getElementById("modalidadGlampingInput");
   const nombre = select.options[select.selectedIndex].value;
   const capacidad = parseInt(select.options[select.selectedIndex].dataset.cap, 10);
@@ -2701,7 +2702,7 @@ function crearGlamping() {
 function unirseGlamping(id) {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre en la pestaña de Asientos primero"); return; }
+  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
   database.ref(TRIP_CONFIG.firebaseRoot + "/casas_campamento/glamping/" + id + "/miembros/" + idIdentidad()).set({
     nombre: datos.nombre, matricula: datos.matricula
   }).then(function () {
@@ -2872,7 +2873,7 @@ function renderCasasPropias() {
 function crearCasaPropia() {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre en la pestaña de Asientos primero"); return; }
+  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
   const nombre = document.getElementById("nombreCasaInput").value.trim() || ("Casa de " + datos.nombre.split(" ")[0]);
   const capacidad = parseInt(document.getElementById("capacidadCasaInput").value, 10);
   if (!capacidad || capacidad < 1) { showToast("Escribe una capacidad válida"); return; }
@@ -2893,7 +2894,7 @@ function crearCasaPropia() {
 function unirseCasaPropia(id) {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre en la pestaña de Asientos primero"); return; }
+  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
   database.ref(TRIP_CONFIG.firebaseRoot + "/casas_campamento/propia/" + id + "/miembros/" + idIdentidad()).set({
     nombre: datos.nombre, matricula: datos.matricula
   }).then(function () {
