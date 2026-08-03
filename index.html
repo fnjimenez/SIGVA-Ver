@@ -308,6 +308,17 @@ body{
   <div id="countdown"></div>
 </div>
 
+<div id="avisoSinSesion" style="max-width:900px;margin:40px auto;padding:0 14px;text-align:center;">
+  <div class="card">
+    <h2>🔐 Inicia sesión para continuar</h2>
+    <p style="margin-bottom:10px;">Este contenido es privado. Necesitas iniciar sesión con tu matrícula para continuar.</p>
+    <p style="color:var(--muted);font-size:.9em;">Usa el botón <b>"🔐 Cuenta"</b> arriba a la derecha — crea tu cuenta la primera vez (matrícula + nombre + contraseña), o inicia sesión si ya la tienes.</p>
+    <p style="color:var(--muted);font-size:.85em;margin-top:8px;">⚠️ Sin tu contraseña, el sistema no puede identificar que los cambios realizados son tuyos ni asociarlos correctamente a tu matrícula.</p>
+  </div>
+</div>
+
+<div id="appContenido" style="display:none;">
+
 <div class="fechas-grid">
   <div class="fecha-card"><div class="dia">19</div><div class="mes">Agosto · Miérc.</div><div class="label">Salida nocturna desde San Felipe</div></div>
   <div class="fecha-card"><div class="dia">20</div><div class="mes">Agosto · Jueves</div><div class="label">La Corona + Planetario · Hotel</div></div>
@@ -322,6 +333,7 @@ body{
   <button class="tab-btn" data-tab="participantes">👥 Participantes</button>
   <button class="tab-btn" data-tab="documentacion">📄 Documentación</button>
   <button class="tab-btn" data-tab="epp">🦺 EPP Y Seguridad</button>
+  <button class="tab-btn" data-tab="pagos" id="tabPagosBtn" style="display:none;">💰 Pagos</button>
 </div>
 
 <!-- TAB INFORMACIÓN -->
@@ -488,15 +500,6 @@ body{
         <button class="btn success" id="asignarCamaBtn">✅ Asignar Cama</button>
       </div>
 
-      <div id="pagoCompletoBox" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--danger);">
-        <label style="font-weight:700;display:block;margin-bottom:6px;">💰 Verificar Pago Completo (Admin/Coordinadores)</label>
-        <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Un alumno NO puede elegir/jalar cama hasta que aquí se registre la fecha en que cubrió el 100% del costo del viaje.</p>
-        <input type="text" id="pagoMatriculaInput" placeholder="Matrícula/empleado del alumno" style="width:100%;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #ccc;">
-        <input type="date" id="pagoFechaInput" style="width:100%;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #ccc;">
-        <button class="btn success" id="guardarPagoBtn">✅ Registrar Pago Completo</button>
-        <button class="btn danger" id="quitarPagoBtn" style="margin-top:6px;">🗑️ Quitar verificación (si fue error)</button>
-        <div id="listaPagosBox" style="margin-top:10px;"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -704,6 +707,28 @@ body{
 
   <div id="reporteEPPBox"></div>
 </div>
+
+<!-- TAB PAGOS (solo Admin/Coordinador) -->
+<div class="tab-content" id="tab-pagos">
+  <div class="card">
+    <h2>💰 Historial de Pagos</h2>
+    <div id="pagosSinAcceso">
+      <div class="alert danger">🔒 Esta sección es exclusiva para Admin o Coordinadores. Inicia sesión desde el Panel Administrador (pestaña Asientos) o con la contraseña de Coordinador (pestaña Documentación).</div>
+    </div>
+    <div id="pagosContenido" style="display:none;">
+      <p style="font-size:.85em;color:var(--muted);margin-bottom:10px;">Un alumno solo puede elegir/jalar cama cuando la <b>suma de sus abonos supere $2,000</b>. Puedes registrar varios abonos por persona; el sistema los suma automáticamente.</p>
+      <input type="text" id="pagoMatriculaInput" placeholder="Matrícula/empleado del alumno" style="width:100%;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #ccc;">
+      <label style="font-size:.8em;">Fecha del abono</label>
+      <input type="date" id="pagoFechaInput" style="width:100%;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #ccc;">
+      <label style="font-size:.8em;">Monto del abono (MXN)</label>
+      <input type="number" id="pagoMontoInput" placeholder="500" min="1" style="width:100%;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #ccc;">
+      <button class="btn success" id="guardarPagoBtn">✅ Agregar Abono</button>
+      <div id="listaPagosBox" style="margin-top:14px;"></div>
+    </div>
+  </div>
+</div>
+
+</div> <!-- cierre de #appContenido -->
 
 <div class="mascota-wrap" id="mascotaWrap">
   <div class="mascota-busqueda" id="mascotaBusqueda" style="display:none;">
@@ -963,6 +988,8 @@ function requiereSesion() {
 function actualizarEstadoSesionUI() {
   const box = document.getElementById("sesionEstadoBox");
   const toggleBtn = document.getElementById("cuentaToggleBtn");
+  const appContenido = document.getElementById("appContenido");
+  const avisoSinSesion = document.getElementById("avisoSinSesion");
   if (!box) return;
   if (estaLogueado()) {
     const nombreInput = document.getElementById("nombreInput");
@@ -978,11 +1005,15 @@ function actualizarEstadoSesionUI() {
       showToast("Sesión cerrada");
     });
     if (toggleBtn) { toggleBtn.textContent = "✅ " + etiqueta; toggleBtn.style.color = "var(--accent)"; }
+    if (appContenido) appContenido.style.display = "block";
+    if (avisoSinSesion) avisoSinSesion.style.display = "none";
     cargarChecklistEPP();
     activarPresencia();
   } else {
     box.innerHTML = "";
     if (toggleBtn) { toggleBtn.textContent = "🔐 Cuenta"; toggleBtn.style.color = "var(--primary)"; }
+    if (appContenido) appContenido.style.display = "none";
+    if (avisoSinSesion) avisoSinSesion.style.display = "block";
   }
 }
 
@@ -1526,15 +1557,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if (pass === TRIP_CONFIG.adminPassword) {
       isAdmin = true;
       document.getElementById("adminControls").style.display = "block";
-      document.getElementById("pagoCompletoBox").style.display = "block";
       document.getElementById("asignarCamaBox").style.display = "block";
+      revelarPestanaPagos();
       poblarSelectCamas();
       const docsBox = document.getElementById("adminDocsBox");
       if (docsBox) docsBox.style.display = "block";
       showToast("🔓 Acceso admin concedido");
       mostrarReporteEPP();
       mostrarParesViejos();
-      mostrarListaPagos();
       renderHospedaje();
     } else {
       showToast("❌ Contraseña incorrecta");
@@ -1546,13 +1576,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (pass === TRIP_CONFIG.coordinadorPassword) {
       esCoordinador = true;
       document.getElementById("adminDocsBox").style.display = "block";
-      document.getElementById("pagoCompletoBox").style.display = "block";
       document.getElementById("asignarCamaBox").style.display = "block";
+      revelarPestanaPagos();
       poblarSelectCamas();
       document.getElementById("coordAccesoCard").style.display = "none";
       showToast("🔓 Acceso a documentación concedido");
       mostrarReporteEPP();
-      mostrarListaPagos();
     } else {
       showToast("❌ Contraseña incorrecta");
     }
@@ -1575,8 +1604,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.getElementById("guardarLayoutBtn").addEventListener("click", guardarLayoutHotel);
   document.getElementById("limpiarParesViejosBtn").addEventListener("click", limpiarParesViejos);
-  document.getElementById("guardarPagoBtn").addEventListener("click", guardarPagoCompleto);
-  document.getElementById("quitarPagoBtn").addEventListener("click", quitarPagoCompleto);
+  document.getElementById("guardarPagoBtn").addEventListener("click", agregarAbono);
   document.getElementById("asignarCamaBtn").addEventListener("click", asignarCamaDirecta);
 
   buildBusMap();
@@ -1866,32 +1894,49 @@ function limpiarParesViejos() {
    Un alumno solo puede elegir/jalar cama si aquí existe su
    fecha de pago completo, capturada por un coordinador.
    ============================================================ */
-function guardarPagoCompleto() {
+const MONTO_MINIMO_CAMA = 2000;
+
+function revelarPestanaPagos() {
+  document.getElementById("tabPagosBtn").style.display = "block";
+  document.getElementById("pagosSinAcceso").style.display = "none";
+  document.getElementById("pagosContenido").style.display = "block";
+  mostrarListaPagos();
+}
+
+function agregarAbono() {
   if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
   const id = document.getElementById("pagoMatriculaInput").value.trim().toUpperCase();
   const fecha = document.getElementById("pagoFechaInput").value;
+  const monto = parseFloat(document.getElementById("pagoMontoInput").value);
   if (!id) { showToast("Escribe la matrícula/empleado del alumno"); return; }
-  if (!fecha) { showToast("Elige la fecha de pago completo"); return; }
-  database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + id).set({
+  if (!fecha) { showToast("Elige la fecha del abono"); return; }
+  if (!monto || monto <= 0) { showToast("Escribe un monto válido"); return; }
+
+  const ref = database.ref(TRIP_CONFIG.firebaseRoot + "/pagos/" + id + "/registros").push();
+  ref.set({
     fecha: fecha,
-    verificadoPor: sesionId || "admin"
+    monto: monto,
+    capturadoPor: sesionId || "admin"
   }).then(function () {
-    showToast("✅ Pago completo registrado para " + id);
-    document.getElementById("pagoMatriculaInput").value = "";
+    showToast("✅ Abono de $" + monto + " agregado para " + id);
     document.getElementById("pagoFechaInput").value = "";
+    document.getElementById("pagoMontoInput").value = "";
     mostrarListaPagos();
   });
 }
 
-function quitarPagoCompleto() {
+function eliminarAbono(id, registroKey) {
   if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
-  const id = document.getElementById("pagoMatriculaInput").value.trim().toUpperCase();
-  if (!id) { showToast("Escribe la matrícula/empleado del alumno a quitar"); return; }
-  if (!confirm("¿Quitar la verificación de pago completo de " + id + "?")) return;
-  database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + id).remove().then(function () {
-    showToast("Verificación quitada para " + id);
+  if (!confirm("¿Eliminar este abono? No se puede deshacer.")) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pagos/" + id + "/registros/" + registroKey).remove().then(function () {
+    showToast("Abono eliminado");
     mostrarListaPagos();
   });
+}
+
+function totalPagadoDe(registrosObj) {
+  if (!registrosObj) return 0;
+  return Object.values(registrosObj).reduce(function (sum, r) { return sum + (r.monto || 0); }, 0);
 }
 
 /* ============================================================
@@ -1953,13 +1998,24 @@ function asignarCamaDirecta() {
 function mostrarListaPagos() {
   const box = document.getElementById("listaPagosBox");
   if (!box || !database) return;
-  database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo").once("value").then(function (snap) {
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pagos").once("value").then(function (snap) {
     const data = snap.val() || {};
     const ids = Object.keys(data);
-    if (!ids.length) { box.innerHTML = '<p style="color:#999;font-size:.85em;">Nadie tiene pago completo verificado todavía.</p>'; return; }
-    let html = '<p style="font-size:.8em;font-weight:700;margin-bottom:4px;">✅ Pagos verificados (' + ids.length + '):</p>';
+    if (!ids.length) { box.innerHTML = '<p style="color:#999;font-size:.85em;">Nadie tiene abonos registrados todavía.</p>'; return; }
+    let html = '<p style="font-size:.8em;font-weight:700;margin-bottom:4px;">💰 Abonos registrados (' + ids.length + ' personas):</p>';
     ids.forEach(function (id) {
-      html += '<div class="participant-row"><span>' + id + '</span><span style="font-size:.85em;">' + data[id].fecha + '</span></div>';
+      const registros = data[id].registros || {};
+      const total = totalPagadoDe(registros);
+      const cumple = total >= MONTO_MINIMO_CAMA;
+      html += '<details style="margin-bottom:6px;padding:4px 8px;">';
+      html += '<summary style="cursor:pointer;display:flex;justify-content:space-between;font-size:.85em;">' +
+        '<span>' + (cumple ? "✅" : "⏳") + ' ' + id + '</span><span>$' + total.toLocaleString() + ' / $' + MONTO_MINIMO_CAMA.toLocaleString() + '</span></summary>';
+      Object.keys(registros).forEach(function (key) {
+        const r = registros[key];
+        html += '<div class="participant-row" style="font-size:.8em;"><span>' + r.fecha + ' — $' + r.monto.toLocaleString() + '</span>' +
+          '<button class="btn danger" onclick="eliminarAbono(\'' + id + '\', \'' + key + '\')" style="width:auto;padding:3px 10px;">🗑️</button></div>';
+      });
+      html += '</details>';
     });
     box.innerHTML = html;
   });
@@ -1983,16 +2039,17 @@ function renderCamas() {
 
   Promise.all([
     database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel").once("value"),
-    database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + idIdentidad()).once("value")
+    database.ref(TRIP_CONFIG.firebaseRoot + "/pagos/" + idIdentidad() + "/registros").once("value")
   ]).then(function (snaps) {
     const camas = snaps[0].val() || {};
-    const miPago = snaps[1].val();
+    const misRegistros = snaps[1].val();
+    const totalPagado = totalPagadoDe(misRegistros);
     let html = '<h3>🏨 Selecciona tu cama</h3>';
     html += '<p style="font-size:.85em;color:var(--muted);margin-bottom:8px;">Casa de hospedaje ya reservada en Veracruz — elige la cama exacta donde te vas a quedar.</p>';
-    if (miPago && miPago.fecha) {
-      html += '<div class="alert success">✅ Pago completo verificado el ' + miPago.fecha + '. Ya puedes elegir/jalar tu cama.</div>';
+    if (totalPagado >= MONTO_MINIMO_CAMA) {
+      html += '<div class="alert success">✅ Ya cubriste $' + totalPagado.toLocaleString() + ' (mínimo $' + MONTO_MINIMO_CAMA.toLocaleString() + '). Ya puedes elegir/jalar tu cama.</div>';
     } else {
-      html += '<div class="alert danger">⚠️ Tu pago completo del viaje aún NO ha sido verificado por los coordinadores. No podrás elegir ni jalar cama hasta que lo confirmen.</div>';
+      html += '<div class="alert danger">⚠️ Llevas $' + totalPagado.toLocaleString() + ' de $' + MONTO_MINIMO_CAMA.toLocaleString() + ' requeridos para poder elegir cama. Consulta tus abonos con los coordinadores.</div>';
     }
     html += '<div class="legend">';
     html += '<span><span class="box" style="background:var(--primary-light)"></span>Disponible</span>';
@@ -2108,10 +2165,10 @@ function jalarCompaneroCamaHotel(key) {
   const info = getCamaLayoutInfo(key);
   const capacidad = info ? info.capacidad : 2;
 
-  database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + idIdentidad()).once("value").then(function (pagoSnap) {
-    const pago = pagoSnap.val();
-    if (!pago || !pago.fecha) {
-      showToast("⚠️ Tu pago completo debe ser verificado por los coordinadores antes de agregar compañeros.");
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pagos/" + idIdentidad() + "/registros").once("value").then(function (pagoSnap) {
+    const total = totalPagadoDe(pagoSnap.val());
+    if (total < MONTO_MINIMO_CAMA) {
+      showToast("⚠️ Necesitas cubrir al menos $" + MONTO_MINIMO_CAMA.toLocaleString() + " (llevas $" + total.toLocaleString() + ") antes de agregar compañeros.");
       return;
     }
     const ref = database.ref(TRIP_CONFIG.firebaseRoot + "/camas_hotel/" + key + "/miembros");
@@ -2362,10 +2419,10 @@ function seleccionarCama(key) {
   const info = getCamaLayoutInfo(key);
   const capacidad = info ? info.capacidad : 2;
 
-  database.ref(TRIP_CONFIG.firebaseRoot + "/pago_completo/" + idIdentidad()).once("value").then(function (pagoSnap) {
-    const pago = pagoSnap.val();
-    if (!pago || !pago.fecha) {
-      showToast("⚠️ Aún no puedes elegir cama — tu pago completo del viaje debe ser verificado por los coordinadores primero.");
+  database.ref(TRIP_CONFIG.firebaseRoot + "/pagos/" + idIdentidad() + "/registros").once("value").then(function (pagoSnap) {
+    const total = totalPagadoDe(pagoSnap.val());
+    if (total < MONTO_MINIMO_CAMA) {
+      showToast("⚠️ Necesitas cubrir al menos $" + MONTO_MINIMO_CAMA.toLocaleString() + " (llevas $" + total.toLocaleString() + ") antes de elegir cama.");
       return;
     }
 
