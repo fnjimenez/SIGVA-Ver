@@ -966,6 +966,7 @@ function showToast(msg) {
    ============================================================ */
 let sesionActiva = false;
 let sesionId = null;
+let sesionNombre = null; // fuente de verdad del nombre una vez logueado, no depende del campo del DOM
 
 async function sha256Hex(texto) {
   const buf = new TextEncoder().encode(texto);
@@ -999,7 +1000,7 @@ function actualizarEstadoSesionUI() {
     const btn = document.getElementById("logoutBtn");
     if (btn) btn.addEventListener("click", function () {
       quitarPresencia();
-      sesionActiva = false; sesionId = null;
+      sesionActiva = false; sesionId = null; sesionNombre = null;
       localStorage.removeItem("veracruzSesion");
       actualizarEstadoSesionUI();
       showToast("Sesión cerrada");
@@ -1203,6 +1204,7 @@ function intentarSesionAutomatica() {
           const perfil = perfilSnap.val();
           const nombreInput = document.getElementById("nombreInput");
           if (nombreInput && perfil && perfil.nombre) {
+            sesionNombre = perfil.nombre;
             nombreInput.value = perfil.nombre;
             guardarPrellenado();
           }
@@ -1237,7 +1239,7 @@ function crearCuenta() {
         database.ref(root + "/passwords/" + id).set(hash),
         database.ref(root + "/perfiles/" + id).set({ nombre: datos.nombre, matricula: datos.matricula })
       ]).then(function () {
-        sesionActiva = true; sesionId = id;
+        sesionActiva = true; sesionId = id; sesionNombre = datos.nombre;
         guardarSesionLocal(id, hash);
         showToast("🔑 Cuenta creada. Sesión iniciada como " + id);
         actualizarEstadoSesionUI();
@@ -1266,6 +1268,7 @@ function iniciarSesionExistente() {
       database.ref(root + "/perfiles/" + id).once("value").then(function (perfilSnap) {
         const perfil = perfilSnap.val();
         if (perfil && perfil.nombre) {
+          sesionNombre = perfil.nombre;
           document.getElementById("nombreInput").value = perfil.nombre;
           guardarPrellenado();
         }
@@ -1432,6 +1435,14 @@ function corregirNombreEnTodosLados() {
 function datosAlumno() {
   const valor = document.getElementById("matriculaInput").value.trim().toUpperCase();
   let nombreCrudo = document.getElementById("nombreInput").value.trim().replace(/\s+/g, " ");
+
+  // Si el campo del nombre quedó vacío/corrupto pero SÍ hay sesión activa
+  // con nombre confirmado, se usa esa fuente de verdad y se repara el campo.
+  if ((!nombreCrudo || nombreCrudo.split(" ").length < 2) && estaLogueado() && sesionNombre) {
+    nombreCrudo = sesionNombre;
+    document.getElementById("nombreInput").value = sesionNombre;
+  }
+
   if (!nombreCrudo || nombreCrudo.split(" ").length < 2) return null; // exige nombre y apellido
   const nombre = formatearNombre(nombreCrudo);
   if (esPersonal()) {
@@ -1761,7 +1772,7 @@ function seleccionarAsiento(num) {
     return;
   }
   if (!datos) {
-    alerta.innerHTML = '<div class="alert danger">❌ Completa tu matrícula (U0000000N0000) o número de empleado, y tu nombre completo (nombre y apellido).</div>';
+    alerta.innerHTML = '<div class="alert danger">❌ Completa tu matrícula (U0000000N0000) o número de empleado, y tu nombre completo, arriba en "🔐 Cuenta".</div>';
     showToast("❌ Revisa tu matrícula/empleado y nombre (arriba)");
     return;
   }
