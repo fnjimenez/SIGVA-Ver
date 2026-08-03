@@ -1197,15 +1197,18 @@ function intentarSesionAutomatica() {
       const guardado = snap.val();
       if (guardado && guardado === d.hash) {
         sesionActiva = true; sesionId = d.id;
-        actualizarEstadoSesionUI();
-        showToast("✅ Sesión recordada: " + d.id);
-        const nombreInput = document.getElementById("nombreInput");
-        if (nombreInput && !nombreInput.value.trim()) {
-          database.ref(TRIP_CONFIG.firebaseRoot + "/perfiles/" + d.id).once("value").then(function (perfilSnap) {
-            const perfil = perfilSnap.val();
-            if (perfil && perfil.nombre) nombreInput.value = perfil.nombre;
-          });
-        }
+        // Firebase (perfiles) es SIEMPRE la fuente de verdad del nombre,
+        // nunca lo que haya quedado guardado en el navegador.
+        database.ref(TRIP_CONFIG.firebaseRoot + "/perfiles/" + d.id).once("value").then(function (perfilSnap) {
+          const perfil = perfilSnap.val();
+          const nombreInput = document.getElementById("nombreInput");
+          if (nombreInput && perfil && perfil.nombre) {
+            nombreInput.value = perfil.nombre;
+            guardarPrellenado();
+          }
+          actualizarEstadoSesionUI();
+          showToast("✅ Sesión recordada: " + d.id);
+        });
       } else {
         localStorage.removeItem("veracruzSesion");
       }
@@ -1262,7 +1265,10 @@ function iniciarSesionExistente() {
       guardarSesionLocal(id, hash);
       database.ref(root + "/perfiles/" + id).once("value").then(function (perfilSnap) {
         const perfil = perfilSnap.val();
-        if (perfil && perfil.nombre) document.getElementById("nombreInput").value = perfil.nombre;
+        if (perfil && perfil.nombre) {
+          document.getElementById("nombreInput").value = perfil.nombre;
+          guardarPrellenado();
+        }
         showToast("✅ Sesión iniciada");
         actualizarEstadoSesionUI();
       });
