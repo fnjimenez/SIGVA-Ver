@@ -749,7 +749,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.03-r1"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.04-r2"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -1283,7 +1283,19 @@ function iniciarSesionExistente() {
 }
 
 function idIdentidad() {
-  const valor = document.getElementById("matriculaInput").value.trim().toUpperCase();
+  const campo = document.getElementById("matriculaInput");
+  let valor = campo.value.trim().toUpperCase();
+
+  // Autoreparación: si hay sesión activa pero el campo de matrícula se vació
+  // por cualquier motivo, se restaura desde la sesión guardada en memoria.
+  if (!valor && sesionActiva && sesionId) {
+    const esEmpleado = sesionId.indexOf("EMP-") === 0;
+    valor = esEmpleado ? sesionId.slice(4) : sesionId;
+    campo.value = valor;
+    const chkPersonal = document.getElementById("esPersonalCheck");
+    if (chkPersonal && chkPersonal.checked !== esEmpleado) chkPersonal.checked = esEmpleado;
+  }
+
   if (!valor) return null;
   if (esPersonal()) return "EMP-" + valor;
   return valor;
