@@ -749,7 +749,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.04-r2"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.04-r3"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -1448,6 +1448,7 @@ function corregirNombreEnTodosLados() {
 }
 
 function datosAlumno() {
+  idIdentidad(); // dispara la autoreparación del campo de matrícula si hiciera falta (debe ir PRIMERO)
   const valor = document.getElementById("matriculaInput").value.trim().toUpperCase();
   let nombreCrudo = document.getElementById("nombreInput").value.trim().replace(/\s+/g, " ");
 
