@@ -749,7 +749,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.04-r3"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.04-r4"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -1294,6 +1294,16 @@ function idIdentidad() {
     campo.value = valor;
     const chkPersonal = document.getElementById("esPersonalCheck");
     if (chkPersonal && chkPersonal.checked !== esEmpleado) chkPersonal.checked = esEmpleado;
+  }
+
+  // Normalización: si alguien escribió "EMP-1665" directo en el campo (con
+  // todo y prefijo) pero la casilla de personal quedó desmarcada, se corrige
+  // solo — así no importa cómo haya quedado escrito, siempre se interpreta bien.
+  if (valor.indexOf("EMP-") === 0) {
+    valor = valor.slice(4);
+    campo.value = valor;
+    const chkPersonal = document.getElementById("esPersonalCheck");
+    if (chkPersonal && !chkPersonal.checked) chkPersonal.checked = true;
   }
 
   if (!valor) return null;
