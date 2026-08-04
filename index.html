@@ -303,6 +303,7 @@ body{
   <h1>🚌 Viaje Académico a Estado de México y Veracruz</h1>
   <p style="font-size:.8em;letter-spacing:.03em;opacity:.9;">Gestión y Planificación Industrial · Logística Portuaria · Responsabilidad Social y Cambio Climático</p>
   <p style="margin-top:10px;">🏫 Universidad del SABES, San Felipe</p>
+  <p id="versionSistema" style="font-size:.68em;opacity:.65;margin-top:2px;letter-spacing:.02em;"></p>
   <div id="connBadge">Conectando...</div>
   <div id="onlineUsersBar" style="margin-top:8px;"></div>
   <div id="countdown"></div>
@@ -748,6 +749,8 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
+const SIGVA_VERSION = "v2026.08.03-r1"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
   totalAsientos: 42,
@@ -1457,6 +1460,8 @@ function datosAlumno() {
    TABS
    ============================================================ */
 document.addEventListener("DOMContentLoaded", function () {
+  const vEl = document.getElementById("versionSistema");
+  if (vEl) vEl.textContent = "Sistema " + SIGVA_VERSION;
   cargarPrellenado();
   document.getElementById("matriculaInput").addEventListener("input", guardarPrellenado);
   document.getElementById("nombreInput").addEventListener("input", guardarPrellenado);
