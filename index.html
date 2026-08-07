@@ -327,6 +327,8 @@ body{
   <div class="fecha-card last"><div class="dia">22</div><div class="mes">Agosto · Sábado</div><div class="label">Tortugas + El Tajín · Regreso</div></div>
 </div>
 
+<div id="resumenPendientesBox" style="max-width:900px;margin:0 auto;padding:0 14px;"></div>
+
 <div class="tabs">
   <button class="tab-btn active" data-tab="info">📋 Información</button>
   <button class="tab-btn" data-tab="asientos">🪑 Asientos</button>
@@ -749,7 +751,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.04-r6"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.04-r7"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -1013,8 +1015,11 @@ function actualizarEstadoSesionUI() {
     if (avisoSinSesion) avisoSinSesion.style.display = "none";
     cargarChecklistEPP();
     activarPresencia();
+    mostrarResumenPendientes();
   } else {
     box.innerHTML = "";
+    const resumenBox = document.getElementById("resumenPendientesBox");
+    if (resumenBox) resumenBox.innerHTML = "";
     if (toggleBtn) { toggleBtn.textContent = "🔐 Cuenta"; toggleBtn.style.color = "var(--primary)"; }
     if (appContenido) appContenido.style.display = "none";
     if (avisoSinSesion) avisoSinSesion.style.display = "block";
@@ -1549,6 +1554,7 @@ document.addEventListener("DOMContentLoaded", function () {
       btn.classList.add("active");
       document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
       tugaTabActual = btn.dataset.tab;
+      mostrarResumenPendientes();
       if (btn.dataset.tab === "epp") {
         cargarChecklistEPP();
         cargarKitTortuguero();
@@ -1998,6 +2004,74 @@ function verificarPagoDe(id) {
   // (útil para revisar el pago del compañero que se va a jalar, no solo el propio).
   return database.ref(TRIP_CONFIG.firebaseRoot + "/pagos/" + id + "/registros").once("value").then(function (snap) {
     return totalPagadoDe(snap.val());
+  });
+}
+
+/* ============================================================
+   RESUMEN DE PENDIENTES DEL ALUMNO
+   Revisa Kit, EPP, pagos, asiento, cama y campamento del usuario
+   con sesión activa, y arma una alerta personalizada con lo que
+   le falte completar antes del viaje.
+   ============================================================ */
+const TOTAL_REQUISITOS_EPP = 46;
+
+function mostrarResumenPendientes() {
+  const box = document.getElementById("resumenPendientesBox");
+  if (!box) return;
+  if (!estaLogueado() || !database) { box.innerHTML = ""; return; }
+  const id = idIdentidad();
+  if (!id) { box.innerHTML = ""; return; }
+  const root = TRIP_CONFIG.firebaseRoot;
+
+  Promise.all([
+    database.ref(root + "/kit_tortuguero/" + id).once("value"),
+    database.ref(root + "/epp_checklist/" + id).once("value"),
+    database.ref(root + "/pagos/" + id + "/registros").once("value"),
+    database.ref(root + "/asientos").once("value"),
+    database.ref(root + "/camas_hotel").once("value"),
+    database.ref(root + "/casas_campamento/propia").once("value"),
+    database.ref(root + "/casas_campamento/glamping").once("value")
+  ]).then(function (snaps) {
+    const kit = snaps[0].val();
+    const epp = snaps[1].val() || {};
+    const totalPagado = totalPagadoDe(snaps[2].val());
+    const asientos = snaps[3].val() || {};
+    const camas = snaps[4].val() || {};
+    const casasPropia = snaps[5].val() || {};
+    const casasGlamping = snaps[6].val() || {};
+
+    const tieneAsiento = Object.values(asientos).some(function (a) { return a.usuario === id; });
+    const tieneCama = Object.values(camas).some(function (c) { return c.miembros && c.miembros[id]; });
+    const tieneCasaCampamento =
+      Object.values(casasPropia).some(function (c) { return (c.responsable && c.responsable.usuario === id) || (c.miembros && c.miembros[id]); }) ||
+      Object.values(casasGlamping).some(function (c) { return (c.responsable && c.responsable.usuario === id) || (c.miembros && c.miembros[id]); });
+
+    const eppMarcados = Object.keys(epp).filter(function (k) { return k !== "_meta" && epp[k]; }).length;
+
+    const pendientes = [];
+    if (!kit || !kit.kit) pendientes.push("🐢 No has seleccionado tu Kit \"Yo liberé una tortuga marina\" (pestaña EPP Y Seguridad → Vida Milenaria).");
+    if (eppMarcados < TOTAL_REQUISITOS_EPP) pendientes.push("🦺 Solo has activado " + eppMarcados + "/" + TOTAL_REQUISITOS_EPP + " requisitos de seguridad (pestaña EPP Y Seguridad).");
+    if (totalPagado < MONTO_MINIMO_CAMA) {
+      pendientes.push("💰 Al momento has abonado $" + totalPagado.toLocaleString() + " pesos (mínimo $" + MONTO_MINIMO_CAMA.toLocaleString() + " para poder elegir cama).");
+    } else if (!tieneCama) {
+      pendientes.push("🏨 Ya cubriste el mínimo — pero aún no has elegido tu espacio para dormir en el hotel de Veracruz (pestaña Hospedaje → Noche 1).");
+    }
+    if (!tieneCasaCampamento) pendientes.push("⛺ No has seleccionado ni creado tu casa de campaña/tienda para la noche de campamento (pestaña Hospedaje → Noche 2).");
+    if (!tieneAsiento) pendientes.push("🪑 No has seleccionado tu asiento en el autobús (pestaña Asientos).");
+
+    if (pendientes.length === 0) {
+      box.innerHTML = '<div class="alert success" style="text-align:center;">✅ ¡Todo listo! Ya completaste todas las pestañas para tu revisión. Nos vemos en el viaje 🚌🌴</div>';
+      return;
+    }
+
+    let html = '<div class="alert danger">';
+    html += '⏰ <b>Ya falta poco para nuestro viaje de estudios</b> y hemos identificado que aún te falta:<br><br>';
+    html += '<ul style="margin:0;padding-left:20px;">';
+    pendientes.forEach(function (p) { html += '<li style="margin-bottom:6px;">' + p + '</li>'; });
+    html += '</ul>';
+    html += '<p style="margin-top:8px;font-size:.85em;">Todas las pestañas deben quedar completadas para tu revisión final.</p>';
+    html += '</div>';
+    box.innerHTML = html;
   });
 }
 
