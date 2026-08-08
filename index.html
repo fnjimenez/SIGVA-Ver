@@ -350,12 +350,12 @@ body{
     <div class="day-label">📅 Jueves 20 de Agosto</div>
     <div class="itin-row"><div class="time">08:00</div><div class="desc">🏭 Visita Fábrica La Corona (Xalostoc, Estado de México)</div></div>
     <div class="itin-row"><div class="time">Tarde</div><div class="desc">🔭 Planetario "El Gran Ehécatl" (Ecatepec)</div></div>
-    <div class="itin-row"><div class="time">Noche</div><div class="desc">🏨 Hospedaje en hotel</div></div>
+    <div class="itin-row"><div class="time">Noche</div><div class="desc">🏨 Hospedaje en La Estancia Real (Heroica Veracruz)</div></div>
 
     <div class="day-label">📅 Viernes 21 de Agosto</div>
     <div class="itin-row"><div class="time">Mañana</div><div class="desc">🚢 Hutchison Ports ICAVE (Puerto de Veracruz)</div></div>
     <div class="itin-row"><div class="time">Medio día</div><div class="desc">🐠 Acuario de Veracruz</div></div>
-    <div class="itin-row"><div class="time">Noche</div><div class="desc">🐢 Campamento Tortuguero "Vida Milenaria" (Tecolutla) - pernocta</div></div>
+    <div class="itin-row"><div class="time">Noche</div><div class="desc">🐢 Liberación de tortugas con Vida Milenaria A.C. — pernocta en Cabañas Don Chico</div></div>
 
     <div class="day-label">📅 Sábado 22 de Agosto</div>
     <div class="itin-row"><div class="time">Mañana</div><div class="desc">🐢 Liberación de tortugas (por temporada)</div></div>
@@ -667,15 +667,15 @@ body{
 
     <!-- CAMPAMENTO TORTUGUERO VIDA MILENARIA -->
     <div class="epp-panel" id="epp-tortuguero" style="display:none;">
-      <h3>🐢 Campamento Tortuguero "Vida Milenaria" — Campus Norte, Tecolutla</h3>
-      <div class="alert info">Reglamento de la asociación para la actividad de liberación de tortugas. Al participar se asume que el grupo leyó y acepta estos puntos.</div>
+      <h3>🐢 Liberación de Tortugas — Vida Milenaria A.C.</h3>
+      <div class="alert info">Reglamento de la asociación para la actividad de liberación de tortugas. Al participar se asume que el grupo leyó y acepta estos puntos. <b>Esa noche nos hospedamos en Cabañas Don Chico</b> (ver detalles en la pestaña Hospedaje).</div>
 
       <h4 style="margin-top:12px;color:var(--accent);">Respeto a las tortugas y al entorno</h4>
       <label class="req-check"><input type="checkbox" data-epp-key="tortuguero_1"> Entiendo que está estrictamente prohibido tocar a las tortugas (ni para fotos ni videos).</label>
       <label class="req-check"><input type="checkbox" data-epp-key="tortuguero_2"> Solo tomaré fotos/video una vez que las tortugas estén en la arena, y SIN flash (las desorienta).</label>
       <label class="req-check"><input type="checkbox" data-epp-key="tortuguero_3"> NO me llevaré conchas, arena, cangrejos, piedras ni ningún elemento natural (es Área Natural Protegida).</label>
       <label class="req-check"><input type="checkbox" data-epp-key="tortuguero_4"> NO dejaré basura ni alteraré el ecosistema de ninguna forma.</label>
-      <label class="req-check"><input type="checkbox" data-epp-key="tortuguero_5"> NO tomaré fotos del área de camping/glamping si hay otros campistas usándola (por su privacidad).</label>
+      <label class="req-check"><input type="checkbox" data-epp-key="tortuguero_5"> NO tomaré fotos del área de hospedaje si hay otros huéspedes usándola (por su privacidad).</label>
 
       <h4 style="margin-top:14px;color:var(--accent);">Horario y organización</h4>
       <label class="req-check"><input type="checkbox" data-epp-key="tortuguero_6"> Entiendo que las liberaciones son entre 6:00 y 7:00 a.m. y el horario se asigna según orden de confirmación — no se garantiza atención fuera de ese horario.</label>
@@ -751,13 +751,13 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.04-r7"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.04-r8"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
   totalAsientos: 42,
   hotel: {
-    // Layout REAL de la casa reservada en Veracruz (Airbnb/casa completa).
+    // Layout REAL de la casa reservada en Veracruz (La Estancia Real, Heroica Veracruz).
     // Cada habitación tiene sus propias camas con su tipo y capacidad.
     layout: [
       { nombre: "🛏️ Recámara 1 (abajo)", camas: [{ tipo: "Matrimonial", capacidad: 2 }] },
@@ -2181,7 +2181,8 @@ function renderCamas() {
     const misRegistros = snaps[1].val();
     const totalPagado = totalPagadoDe(misRegistros);
     let html = '<h3>🏨 Selecciona tu cama</h3>';
-    html += '<p style="font-size:.85em;color:var(--muted);margin-bottom:8px;">Casa de hospedaje ya reservada en Veracruz — elige la cama exacta donde te vas a quedar.</p>';
+    html += '<p style="font-size:.85em;color:var(--muted);margin-bottom:2px;"><b>🏠 La Estancia Real</b> — Juan Enríquez 1387, Heroica Veracruz, Ver. 91700</p>';
+    html += '<p style="font-size:.85em;color:var(--muted);margin-bottom:8px;">Casa de hospedaje ya reservada — elige la cama exacta donde te vas a quedar.</p>';
     if (totalPagado >= MONTO_MINIMO_CAMA) {
       html += '<div class="alert success">✅ Ya cubriste $' + totalPagado.toLocaleString() + ' (mínimo $' + MONTO_MINIMO_CAMA.toLocaleString() + '). Ya puedes elegir/jalar tu cama.</div>';
     } else {
@@ -2616,45 +2617,18 @@ let tipoCampamentoActual = "propia";
 function renderCampamento() {
   const cont = document.getElementById("hospedajeContenido");
 
-  let html = '<h3>🐢 Campamento Tortuguero "Vida Milenaria" (Tecolutla)</h3>';
-  html += '<p style="font-size:.9em;color:var(--muted);margin-bottom:10px;">Vive la experiencia de acampar en un lugar mágico ✨ — bosque 🌳 frente al mar 🌊🌴</p>';
+  let html = '<h3>🐢 Noche de Campamento — Cabañas Don Chico</h3>';
+  html += '<p style="font-size:.9em;color:var(--muted);margin-bottom:10px;"><b>📍 Camino Real km 7</b> (Isla Santa María Barra de), 93550 Boca de Lima, Ver.</p>';
+  html += '<p style="font-size:.9em;color:var(--muted);margin-bottom:10px;">Esa misma noche participamos en la liberación de tortugas con Vida Milenaria A.C. — revisa el reglamento completo y elige tu Kit en la pestaña 🦺 EPP Y Seguridad → Vida Milenaria.</p>';
 
   html += '<div class="alert success">💰 <b>Tarifa base:</b> $' + TRIP_CONFIG.campamento.tarifaBase + ' por persona (llevando tu propia casa de campaña) — ya está incluida en tu cuota general del viaje, no pagas nada extra.</div>';
-  html += '<div class="alert warning">⛺ Cada alumno (o grupo) debe llevar su propia casa de campaña e implementos para armarla. El pago del espacio por persona incluye lo siguiente:</div>';
+  html += '<div class="alert warning">⛺ Cada alumno (o grupo) debe llevar su propia casa de campaña e implementos para armarla.</div>';
+  html += '<div class="alert info">📝 Detalles específicos de servicios en Cabañas Don Chico (baños, estacionamiento, alimentos, etc.) están pendientes de confirmar — se actualizará aquí en cuanto se tengan.</div>';
 
-  html += '<ul class="amenity-list">';
-  html += '<li>⛺ Espacio para colocar tu tienda (trae tu propia tienda; no incluye tarimas)</li>';
-  html += '<li>🚘 Amplio estacionamiento</li>';
-  html += '<li>🚿 Baños y regaderas</li>';
-  html += '<li>🏝️ Acceso a la playa</li>';
-  html += '<li>🏖️ Uso de la palapa en la playa</li>';
-  html += '<li>🏕️ Uso de la palapa en la zona de camping</li>';
-  html += '<li>🔥 Uso de fogón para cocinar con leña (no incluye utensilios, hay que traer los propios)</li>';
-  html += '<li>📱 Carga de celulares (energía solar, horario limitado)</li>';
-  html += '<li>🛜 Wi-Fi solo durante el día (antena conectada a panel solar)</li>';
-  html += '<li>💡 Iluminación en las noches</li>';
-  html += '<li>🐕 Pet friendly — se puede llevar mascota sin cargo adicional</li>';
-  html += '</ul>';
-
-  html += '<h3 style="margin-top:16px;">🌊 Servicios adicionales (no incluidos)</h3>';
-  html += '<ul class="amenity-list">';
-  html += '<li>🔥 Fogata en la playa</li>';
-  html += '<li>🌴 Renta de hamacas</li>';
-  html += '<li>🐢 Liberación de tortugas bebé (actividad por temporada, sujeta a nacimientos del día)</li>';
-  html += '</ul>';
-
-  html += '<h3 style="margin-top:18px;">🏕️ ¿Con qué te vas a quedar esta noche?</h3>';
-  html += '<div class="tent-toggle">';
-  html += '<div class="tent-option ' + (tipoCampamentoActual === "propia" ? "active" : "") + '" id="opt-propia">⛺ Llevo mi propia casa de campaña (default, en grupos)</div>';
-  html += '<div class="tent-option ' + (tipoCampamentoActual === "glamping" ? "active" : "") + '" id="opt-glamping">✨ Glamping (casa amueblada, sobre tarima y colchoneta)</div>';
-  html += '</div>';
-  html += '<p class="amenity-note">💰 Las tarifas de Glamping se consultan directamente con los coordinadores. Puedes cambiar de opción cuando quieras.</p>';
+  html += '<h3 style="margin-top:18px;">⛺ Selecciona tu Casa de Campaña</h3>';
   html += '<div id="casasCampamentoGrid" style="margin-top:14px;"></div>';
 
   cont.innerHTML = html;
-
-  document.getElementById("opt-propia").addEventListener("click", function () { tipoCampamentoActual = "propia"; renderCampamento(); });
-  document.getElementById("opt-glamping").addEventListener("click", function () { tipoCampamentoActual = "glamping"; renderCampamento(); });
 
   renderCasasCampamento();
 }
