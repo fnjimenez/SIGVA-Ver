@@ -751,7 +751,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.04-r8"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.08-r9"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -1208,6 +1208,9 @@ function intentarSesionAutomatica() {
         sesionActiva = true; sesionId = d.id;
         // Firebase (perfiles) es SIEMPRE la fuente de verdad del nombre,
         // nunca lo que haya quedado guardado en el navegador.
+        const nombreInputInicial = document.getElementById("nombreInput");
+        if (nombreInputInicial) nombreInputInicial.value = "";
+        sesionNombre = null;
         database.ref(TRIP_CONFIG.firebaseRoot + "/perfiles/" + d.id).once("value").then(function (perfilSnap) {
           const perfil = perfilSnap.val();
           const nombreInput = document.getElementById("nombreInput");
@@ -1273,6 +1276,10 @@ function iniciarSesionExistente() {
 
       sesionActiva = true; sesionId = id;
       guardarSesionLocal(id, hash);
+      // Se limpia YA el campo (por si tenía el nombre de otra persona guardado
+      // de una sesión/prueba anterior), y se rellena con el correcto de Firebase.
+      document.getElementById("nombreInput").value = "";
+      sesionNombre = null;
       database.ref(root + "/perfiles/" + id).once("value").then(function (perfilSnap) {
         const perfil = perfilSnap.val();
         if (perfil && perfil.nombre) {
