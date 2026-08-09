@@ -270,29 +270,37 @@ body{
 <div id="cuentaWidget" style="position:fixed;top:14px;right:14px;z-index:1000;">
   <button id="cuentaToggleBtn" type="button" style="background:#fff;border:none;border-radius:30px;padding:9px 16px;font-weight:700;font-size:.85em;box-shadow:0 2px 10px rgba(0,0,0,.15);cursor:pointer;color:var(--primary);">🔐 Cuenta</button>
   <div id="cuentaDropdown" style="display:none;position:absolute;right:0;top:44px;width:280px;background:#fff;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.2);padding:16px;">
-    <div class="night-toggle" style="margin-bottom:10px;">
-      <button type="button" class="cuenta-modo-toggle active" data-modo="login">Iniciar Sesión</button>
-      <button type="button" class="cuenta-modo-toggle" data-modo="crear">Crear Cuenta</button>
+
+    <div id="cuentaEleccionInicial">
+      <p style="font-weight:700;margin-bottom:10px;text-align:center;color:var(--primary);">¿Qué necesitas hacer?</p>
+      <button class="btn success" id="irALoginBtn" type="button" style="margin-bottom:8px;">🔓 Ya tengo cuenta<br><span style="font-weight:400;font-size:.8em;">Iniciar Sesión</span></button>
+      <button class="btn warning" id="irACrearBtn" type="button">🔑 Es mi primera vez<br><span style="font-weight:400;font-size:.8em;">Crear Cuenta</span></button>
     </div>
 
-    <div class="form-group">
-      <label id="matriculaLabel" style="font-size:.85em;">Matrícula (U0000000N0000)</label>
-      <input type="text" id="matriculaInput" placeholder="U2303057N0061" maxlength="13">
-    </div>
-    <div class="form-group" id="nombreCrearGroup" style="display:none;">
-      <label style="font-size:.85em;">Nombre completo</label>
-      <input type="text" id="nombreInput" placeholder="Nombre y apellidos">
-    </div>
-    <div class="form-group">
-      <label style="font-size:.85em;" id="passwordLabel">Contraseña</label>
-      <div style="position:relative;">
-        <input type="password" id="passwordInput" placeholder="••••••" maxlength="30" style="padding-right:36px;">
-        <button type="button" id="togglePasswordBtn" title="Mostrar/ocultar contraseña" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1em;padding:2px 4px;">👁️</button>
+    <div id="camposCuentaCompartidos" style="display:none;">
+      <p id="tituloModoActivo" style="font-weight:700;margin-bottom:8px;text-align:center;"></p>
+
+      <div class="form-group">
+        <label id="matriculaLabel" style="font-size:.85em;">Matrícula (U0000000N0000)</label>
+        <input type="text" id="matriculaInput" placeholder="U2303057N0061" maxlength="13">
       </div>
+      <div class="form-group" id="nombreCrearGroup" style="display:none;">
+        <label style="font-size:.85em;">Nombre completo</label>
+        <input type="text" id="nombreInput" placeholder="Nombre y apellidos">
+      </div>
+      <div class="form-group">
+        <label style="font-size:.85em;" id="passwordLabel">Contraseña</label>
+        <div style="position:relative;">
+          <input type="password" id="passwordInput" placeholder="••••••" maxlength="30" style="padding-right:36px;">
+          <button type="button" id="togglePasswordBtn" title="Mostrar/ocultar contraseña" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1em;padding:2px 4px;">👁️</button>
+        </div>
+      </div>
+
+      <button class="btn success" id="loginBtn" type="button" style="display:none;">🔓 Iniciar Sesión</button>
+      <button class="btn warning" id="crearCuentaBtn" type="button" style="display:none;">🔑 Crear mi Cuenta</button>
+      <p style="text-align:center;margin-top:8px;"><a href="#" id="volverEleccionBtn" style="font-size:.82em;color:var(--muted);">‹ Elegir otra opción</a></p>
     </div>
 
-    <button class="btn success" id="loginBtn" type="button">🔓 Iniciar Sesión</button>
-    <button class="btn success" id="crearCuentaBtn" type="button" style="display:none;">🔑 Crear mi Cuenta</button>
     <div id="sesionEstadoBox" style="margin-top:10px;"></div>
   </div>
 </div>
@@ -751,7 +759,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.08-r9"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.09-r10"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -996,12 +1004,16 @@ function actualizarEstadoSesionUI() {
   const toggleBtn = document.getElementById("cuentaToggleBtn");
   const appContenido = document.getElementById("appContenido");
   const avisoSinSesion = document.getElementById("avisoSinSesion");
+  const eleccionInicial = document.getElementById("cuentaEleccionInicial");
+  const camposCompartidos = document.getElementById("camposCuentaCompartidos");
   if (!box) return;
   if (estaLogueado()) {
     const nombreInput = document.getElementById("nombreInput");
     const nombre = nombreInput && nombreInput.value.trim() ? nombreInput.value.trim() : "";
     const etiqueta = sesionId + (nombre ? " — " + nombre : "");
     box.innerHTML = '<div class="alert success">✅ Sesión iniciada como <b>' + etiqueta + '</b>. <button class="btn danger" id="logoutBtn" type="button" style="margin-top:8px;">Cerrar sesión</button></div>';
+    if (eleccionInicial) eleccionInicial.style.display = "none";
+    if (camposCompartidos) camposCompartidos.style.display = "none";
     const btn = document.getElementById("logoutBtn");
     if (btn) btn.addEventListener("click", function () {
       quitarPresencia();
@@ -1009,6 +1021,8 @@ function actualizarEstadoSesionUI() {
       localStorage.removeItem("veracruzSesion");
       actualizarEstadoSesionUI();
       showToast("Sesión cerrada");
+      if (eleccionInicial) eleccionInicial.style.display = "block";
+      if (camposCompartidos) camposCompartidos.style.display = "none";
     });
     if (toggleBtn) { toggleBtn.textContent = "✅ " + etiqueta; toggleBtn.style.color = "var(--accent)"; }
     if (appContenido) appContenido.style.display = "block";
@@ -1236,8 +1250,19 @@ function guardarSesionLocal(id, hash) {
 function crearCuenta() {
   const id = idIdentidad();
   if (!id) { showToast("Escribe tu matrícula/número de empleado primero"); return; }
+
+  const nombreCrudo = document.getElementById("nombreInput").value.trim().replace(/\s+/g, " ");
+  if (!nombreCrudo || nombreCrudo.split(" ").length < 2) { showToast("Escribe tu nombre completo (nombre y apellido)"); return; }
+
+  const valorMatricula = document.getElementById("matriculaInput").value.trim().toUpperCase();
+  if (esPersonal()) {
+    if (!validarEmpleado(valorMatricula)) { showToast("El número de empleado debe ser solo dígitos (3 a 6), ej. 1665"); return; }
+  } else {
+    if (!validarMatricula(valorMatricula)) { showToast("La matrícula debe tener el formato U0000000N0000, ej. U2303057N0061"); return; }
+  }
+
   const datos = datosAlumno();
-  if (!datos) { showToast("Escribe tu nombre completo (nombre y apellido)"); return; }
+  if (!datos) { showToast("Revisa tu matrícula/empleado y nombre — algo no coincide"); return; }
   const pass = document.getElementById("passwordInput").value;
   if (!pass || pass.length < 4) { showToast("La contraseña debe tener al menos 4 caracteres"); return; }
   if (!database) { showToast("Esperando conexión con la base de datos..."); return; }
@@ -1316,6 +1341,20 @@ function idIdentidad() {
     campo.value = valor;
     const chkPersonal = document.getElementById("esPersonalCheck");
     if (chkPersonal && !chkPersonal.checked) chkPersonal.checked = true;
+  }
+
+  // Autodetección de formato: si lo escrito claramente es una matrícula de
+  // alumno (U0000000N0000) o claramente un número de empleado (solo dígitos),
+  // se corrige la casilla para que coincida — así no importa si quedó marcada
+  // o desmarcada de una prueba/sesión anterior en el mismo navegador.
+  if (valor) {
+    const chkPersonal = document.getElementById("esPersonalCheck");
+    const pareceAlumno = /^U\d{7}N\d{4}$/i.test(valor);
+    const pareceEmpleado = /^\d{3,6}$/.test(valor);
+    if (chkPersonal) {
+      if (pareceAlumno && chkPersonal.checked) chkPersonal.checked = false;
+      else if (pareceEmpleado && !chkPersonal.checked) chkPersonal.checked = true;
+    }
   }
 
   if (!valor) return null;
@@ -1511,17 +1550,25 @@ document.addEventListener("DOMContentLoaded", function () {
     this.textContent = esOculto ? "🙈" : "👁️";
   });
 
-  document.querySelectorAll(".cuenta-modo-toggle").forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      document.querySelectorAll(".cuenta-modo-toggle").forEach(function (b) { b.classList.remove("active"); });
-      btn.classList.add("active");
-      const esLogin = btn.dataset.modo === "login";
-      document.getElementById("nombreCrearGroup").style.display = esLogin ? "none" : "block";
-      document.getElementById("loginBtn").style.display = esLogin ? "block" : "none";
-      document.getElementById("crearCuentaBtn").style.display = esLogin ? "none" : "block";
-      document.getElementById("passwordLabel").textContent = esLogin ? "Contraseña" : "Contraseña (mín. 4 caracteres)";
-    });
+  function mostrarModoCuenta(modo) {
+    const esLogin = modo === "login";
+    document.getElementById("cuentaEleccionInicial").style.display = "none";
+    document.getElementById("camposCuentaCompartidos").style.display = "block";
+    document.getElementById("tituloModoActivo").textContent = esLogin ? "🔓 Iniciar Sesión" : "🔑 Crear Cuenta Nueva";
+    document.getElementById("tituloModoActivo").style.color = esLogin ? "var(--accent)" : "var(--warning)";
+    document.getElementById("nombreCrearGroup").style.display = esLogin ? "none" : "block";
+    document.getElementById("loginBtn").style.display = esLogin ? "block" : "none";
+    document.getElementById("crearCuentaBtn").style.display = esLogin ? "none" : "block";
+    document.getElementById("passwordLabel").textContent = esLogin ? "Contraseña" : "Contraseña (mín. 4 caracteres)";
+  }
+
+  document.getElementById("irALoginBtn").addEventListener("click", function (e) { e.stopPropagation(); mostrarModoCuenta("login"); });
+  document.getElementById("irACrearBtn").addEventListener("click", function (e) { e.stopPropagation(); mostrarModoCuenta("crear"); });
+  document.getElementById("volverEleccionBtn").addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById("camposCuentaCompartidos").style.display = "none";
+    document.getElementById("cuentaEleccionInicial").style.display = "block";
   });
 
   document.getElementById("cuentaToggleBtn").addEventListener("click", function (e) {
