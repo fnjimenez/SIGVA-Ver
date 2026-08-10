@@ -532,6 +532,7 @@ body{
 <div class="tab-content" id="tab-participantes">
   <div class="card">
     <h2>👥 Participantes Registrados</h2>
+    <p style="font-size:.8em;color:var(--muted);margin-bottom:10px;">🔢 Numerados por orden de prioridad: quien registró su primer abono más temprano aparece primero. El número "—" es para quien aún no tiene ningún abono registrado.</p>
     <div id="listaParticipantes"><p style="color:#999;">Cargando...</p></div>
   </div>
 </div>
@@ -759,7 +760,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.09-r10"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.09-r11"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -3149,13 +3150,33 @@ function renderParticipantes(asientosData) {
     database.ref(root + "/camas_hotel").once("value"),
     database.ref(root + "/pares_cama_provisional").once("value"),
     database.ref(root + "/casas_campamento/propia").once("value"),
-    database.ref(root + "/casas_campamento/glamping").once("value")
+    database.ref(root + "/casas_campamento/glamping").once("value"),
+    database.ref(root + "/pagos").once("value")
   ]).then(function (snaps) {
     const camas = snaps[0].val() || {};
     const pares = snaps[1].val() || {};
     const propias = snaps[2].val() || {};
     const glampings = snaps[3].val() || {};
+    const pagos = snaps[4].val() || {};
     const hospedajeMap = {}; // identidad (usuario/matrícula) -> descripción de hospedaje
+
+    // Calcular orden de prioridad: fecha del PRIMER abono (cronológico, el más
+    // antiguo primero) + monto total acumulado, por identidad.
+    const prioridadPorId = {};
+    Object.keys(pagos).forEach(function (id) {
+      const registros = Object.values(pagos[id].registros || {});
+      if (!registros.length) return;
+      const fechas = registros.map(function (r) { return r.fecha; }).filter(Boolean).sort();
+      prioridadPorId[id] = {
+        total: registros.reduce(function (s, r) { return s + (r.monto || 0); }, 0),
+        primeraFecha: fechas[0] || "9999-99-99"
+      };
+    });
+    const ordenPrioridad = Object.keys(prioridadPorId).sort(function (a, b) {
+      return prioridadPorId[a].primeraFecha.localeCompare(prioridadPorId[b].primeraFecha);
+    });
+    const numeroPorId = {};
+    ordenPrioridad.forEach(function (id, idx) { numeroPorId[id] = idx + 1; });
 
     // Camas de hotel ya estructuradas (habitación/cama)
     Object.keys(camas).forEach(function (key) {
@@ -3186,14 +3207,29 @@ function renderParticipantes(asientosData) {
     });
 
     let html = "";
-    entries.forEach(function (num) {
+    // Reordenar: primero quienes tienen abonos registrados (por orden cronológico
+    // de su primer abono), y al final quienes aún no tienen ningún abono.
+    const entriesOrdenadas = entries.slice().sort(function (a, b) {
+      const idA = asientosData[a].usuario, idB = asientosData[b].usuario;
+      const numA = numeroPorId[idA], numB = numeroPorId[idB];
+      if (numA && numB) return numA - numB;
+      if (numA && !numB) return -1;
+      if (!numA && numB) return 1;
+      return a - b; // ninguno tiene abono: se quedan en orden de asiento
+    });
+    entriesOrdenadas.forEach(function (num) {
       const p = asientosData[num];
       const hosp = hospedajeMap[p.usuario] || '<span style="color:var(--danger);">⚠️ sin hospedaje registrado</span>';
       const idAdmin = isAdmin ? ' <code style="font-size:.75em;color:var(--muted);">[' + p.usuario + ']</code>' : '';
+      const prio = prioridadPorId[p.usuario];
+      const numeroBadge = numeroPorId[p.usuario]
+        ? '<span style="background:var(--accent);color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:.75em;font-weight:800;margin-right:6px;">' + numeroPorId[p.usuario] + '</span>'
+        : '<span style="background:#ccc;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:.7em;font-weight:800;margin-right:6px;">—</span>';
+      const infoAbono = prio ? ('$' + prio.total.toLocaleString() + ' · desde ' + prio.primeraFecha) : 'sin abonos registrados';
       html +=
         '<div class="participant-row" style="flex-direction:column;align-items:flex-start;gap:3px;">' +
-          '<div style="display:flex;justify-content:space-between;width:100%;"><span>💺 Asiento ' + num + ' — ' + p.nombre + idAdmin + '</span><span>' + p.matricula + '</span></div>' +
-          '<div style="font-size:.82em;color:var(--muted);">' + hosp + '</div>' +
+          '<div style="display:flex;justify-content:space-between;width:100%;"><span>' + numeroBadge + '💺 Asiento ' + num + ' — ' + p.nombre + idAdmin + '</span><span>' + p.matricula + '</span></div>' +
+          '<div style="font-size:.82em;color:var(--muted);padding-left:30px;">' + hosp + ' · 💰 ' + infoAbono + '</div>' +
         '</div>';
     });
 
