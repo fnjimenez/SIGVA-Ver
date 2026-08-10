@@ -760,7 +760,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.10-r12"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.10-r13"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -1523,12 +1523,25 @@ function datosAlumno() {
 
   if (!nombreCrudo || nombreCrudo.split(" ").length < 2) return null; // exige nombre y apellido
   const nombre = formatearNombre(nombreCrudo);
+  let resultado = null;
   if (esPersonal()) {
     if (!validarEmpleado(valor)) return null;
-    return { matricula: "EMP-" + valor, nombre: nombre };
+    resultado = { matricula: "EMP-" + valor, nombre: nombre };
+  } else {
+    if (!validarMatricula(valor)) return null;
+    resultado = { matricula: valor, nombre: nombre };
   }
-  if (!validarMatricula(valor)) return null;
-  return { matricula: valor, nombre: nombre };
+
+  // Autorrespaldo: si hay sesión activa con este mismo nombre pero el perfil
+  // nunca se guardó en Firebase (cuentas creadas antes de que existiera este
+  // respaldo), se guarda ahora — así, la próxima vez que recuerde la sesión,
+  // ya puede autocompletar el nombre solo.
+  if (estaLogueado() && sesionId === idIdentidad() && !sesionNombre && database) {
+    sesionNombre = nombre;
+    database.ref(TRIP_CONFIG.firebaseRoot + "/perfiles/" + sesionId).set({ nombre: nombre, matricula: resultado.matricula });
+  }
+
+  return resultado;
 }
 
 /* ============================================================
