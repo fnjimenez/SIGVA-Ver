@@ -760,7 +760,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.09-r11"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.10-r12"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -2189,18 +2189,49 @@ function asignarCamaDirecta() {
 function mostrarListaPagos() {
   const box = document.getElementById("listaPagosBox");
   if (!box || !database) return;
-  database.ref(TRIP_CONFIG.firebaseRoot + "/pagos").once("value").then(function (snap) {
-    const data = snap.val() || {};
+  const root = TRIP_CONFIG.firebaseRoot;
+  Promise.all([
+    database.ref(root + "/pagos").once("value"),
+    database.ref(root + "/asientos").once("value")
+  ]).then(function (snaps) {
+    const data = snaps[0].val() || {};
+    const asientos = snaps[1].val() || {};
+    const idsConAsiento = {}; // set de identidades (usuario) que SÍ tienen asiento
+    const nombresPorId = {};
+    Object.values(asientos).forEach(function (a) {
+      idsConAsiento[a.usuario] = true;
+      nombresPorId[a.usuario] = a.nombre;
+    });
+
     const ids = Object.keys(data);
     if (!ids.length) { box.innerHTML = '<p style="color:#999;font-size:.85em;">Nadie tiene abonos registrados todavía.</p>'; return; }
-    let html = '<p style="font-size:.8em;font-weight:700;margin-bottom:4px;">💰 Abonos registrados (' + ids.length + ' personas):</p>';
+
+    const huerfanos = ids.filter(function (id) { return !idsConAsiento[id]; });
+
+    let html = "";
+    if (huerfanos.length) {
+      html += '<div class="alert danger" style="margin-bottom:10px;">';
+      html += '⚠️ <b>' + huerfanos.length + ' abono(s) no coinciden con ningún asiento registrado</b> — probablemente la matrícula se escribió distinto al capturar el pago vs. al elegir asiento. Revisa letra por letra:';
+      html += '</div>';
+      huerfanos.forEach(function (id) {
+        const total = totalPagadoDe(data[id].registros);
+        html += '<div class="participant-row" style="border:1px solid var(--danger);border-radius:8px;padding:6px 10px;margin-bottom:6px;">';
+        html += '<span>🔑 <code>' + id + '</code> — $' + total.toLocaleString() + '</span>';
+        html += '<button class="btn warning" style="width:auto;padding:5px 10px;font-size:.8em;" onclick="reasignarAbonos(\'' + id + '\')">🔧 Reasignar</button>';
+        html += '</div>';
+      });
+    }
+
+    html += '<p style="font-size:.8em;font-weight:700;margin-bottom:4px;margin-top:10px;">💰 Abonos registrados (' + ids.length + ' personas):</p>';
     ids.forEach(function (id) {
       const registros = data[id].registros || {};
       const total = totalPagadoDe(registros);
       const cumple = total >= MONTO_MINIMO_CAMA;
-      html += '<details style="margin-bottom:6px;padding:4px 8px;">';
+      const sinAsiento = !idsConAsiento[id];
+      const nombreLabel = nombresPorId[id] ? (" — " + nombresPorId[id]) : "";
+      html += '<details style="margin-bottom:6px;padding:4px 8px;' + (sinAsiento ? 'border:1px dashed var(--danger);border-radius:8px;' : '') + '">';
       html += '<summary style="cursor:pointer;display:flex;justify-content:space-between;font-size:.85em;">' +
-        '<span>' + (cumple ? "✅" : "⏳") + ' ' + id + '</span><span>$' + total.toLocaleString() + ' / $' + MONTO_MINIMO_CAMA.toLocaleString() + '</span></summary>';
+        '<span>' + (sinAsiento ? "❓" : (cumple ? "✅" : "⏳")) + ' ' + id + nombreLabel + '</span><span>$' + total.toLocaleString() + ' / $' + MONTO_MINIMO_CAMA.toLocaleString() + '</span></summary>';
       Object.keys(registros).forEach(function (key) {
         const r = registros[key];
         html += '<div class="participant-row" style="font-size:.8em;"><span>' + r.fecha + ' — $' + r.monto.toLocaleString() + '</span>' +
@@ -2209,6 +2240,30 @@ function mostrarListaPagos() {
       html += '</details>';
     });
     box.innerHTML = html;
+  });
+}
+
+function reasignarAbonos(idViejo) {
+  if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
+  const idNuevo = prompt("Matrícula/empleado CORRECTO al que se deben mover estos abonos (revisa que coincida exacto con su asiento):", "");
+  if (!idNuevo) return;
+  const idNuevoLimpio = idNuevo.trim().toUpperCase();
+  if (!idNuevoLimpio) { showToast("Matrícula vacía, no se movió nada"); return; }
+  const root = TRIP_CONFIG.firebaseRoot;
+  database.ref(root + "/pagos/" + idViejo).once("value").then(function (snap) {
+    const datos = snap.val();
+    if (!datos) { showToast("Ya no existen esos abonos"); return; }
+    database.ref(root + "/pagos/" + idNuevoLimpio + "/registros").once("value").then(function (existingSnap) {
+      const existentes = existingSnap.val() || {};
+      const nuevos = Object.assign({}, existentes, datos.registros || {});
+      Promise.all([
+        database.ref(root + "/pagos/" + idNuevoLimpio + "/registros").set(nuevos),
+        database.ref(root + "/pagos/" + idViejo).remove()
+      ]).then(function () {
+        showToast("✅ Abonos movidos de " + idViejo + " a " + idNuevoLimpio);
+        mostrarListaPagos();
+      });
+    });
   });
 }
 
