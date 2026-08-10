@@ -760,7 +760,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.10-r13"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.10-r14"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -1874,8 +1874,9 @@ function seleccionarAsiento(num) {
     return;
   }
   if (!datos) {
-    alerta.innerHTML = '<div class="alert danger">❌ Completa tu matrícula (U0000000N0000) o número de empleado, y tu nombre completo, arriba en "🔐 Cuenta".</div>';
-    showToast("❌ Revisa tu matrícula/empleado y nombre (arriba)");
+    const msj = mensajeDiagnosticoDatos();
+    alerta.innerHTML = '<div class="alert danger">' + msj + '</div>';
+    showToast(msj);
     return;
   }
 
@@ -2593,7 +2594,7 @@ function renderParesProvisional() {
 function crearParProvisional() {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
+  if (!datos) { showToast(mensajeDiagnosticoDatos()); return; }
 
   const ref = database.ref(TRIP_CONFIG.firebaseRoot + "/pares_cama_provisional").push();
   ref.set({
@@ -2609,7 +2610,7 @@ function crearParProvisional() {
 function unirseParProvisional(id) {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
+  if (!datos) { showToast(mensajeDiagnosticoDatos()); return; }
   database.ref(TRIP_CONFIG.firebaseRoot + "/pares_cama_provisional/" + id + "/miembros/" + idIdentidad()).set({
     nombre: datos.nombre, matricula: datos.matricula
   }).then(function () {
@@ -2677,10 +2678,22 @@ function adminEliminarParProvisional(id) {
 }
 
 
+function mensajeDiagnosticoDatos() {
+  const m = document.getElementById("matriculaInput").value.trim();
+  const n = document.getElementById("nombreInput").value.trim().replace(/\s+/g, " ");
+  const palabras = n ? n.split(" ").filter(Boolean).length : 0;
+  if (!n) return "❌ Tu campo de NOMBRE está vacío. Abre '🔐 Cuenta' arriba a la derecha y escribe tu nombre completo.";
+  if (palabras < 2) return "❌ Tu nombre está incompleto (solo pusiste: \"" + n + "\"). Ve a 'Cuenta' y escribe nombre Y apellido.";
+  if (!m) return "❌ Tu campo de MATRÍCULA está vacío. Abre '🔐 Cuenta' arriba a la derecha y escríbela.";
+  if (esPersonal() && !validarEmpleado(m.toUpperCase())) return "❌ Tu matrícula \"" + m + "\" no es válida como número de empleado (debe ser solo dígitos). Revisa la casilla 'Personal' en el Panel Admin.";
+  if (!esPersonal() && !validarMatricula(m.toUpperCase())) return "❌ Tu matrícula \"" + m + "\" no tiene el formato correcto (debe ser U0000000N0000).";
+  return "❌ Completa tu matrícula y nombre arriba en Cuenta primero";
+}
+
 function seleccionarCama(key) {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
+  if (!datos) { showToast(mensajeDiagnosticoDatos()); return; }
   const info = getCamaLayoutInfo(key);
   const capacidad = info ? info.capacidad : 2;
 
@@ -2910,7 +2923,7 @@ function mostrarDiferencialGlamping() {
 function crearGlamping() {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
+  if (!datos) { showToast(mensajeDiagnosticoDatos()); return; }
   const select = document.getElementById("modalidadGlampingInput");
   const nombre = select.options[select.selectedIndex].value;
   const capacidad = parseInt(select.options[select.selectedIndex].dataset.cap, 10);
@@ -2933,7 +2946,7 @@ function crearGlamping() {
 function unirseGlamping(id) {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
+  if (!datos) { showToast(mensajeDiagnosticoDatos()); return; }
   database.ref(TRIP_CONFIG.firebaseRoot + "/casas_campamento/glamping/" + id + "/miembros/" + idIdentidad()).set({
     nombre: datos.nombre, matricula: datos.matricula
   }).then(function () {
@@ -3104,7 +3117,7 @@ function renderCasasPropias() {
 function crearCasaPropia() {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
+  if (!datos) { showToast(mensajeDiagnosticoDatos()); return; }
   const nombre = document.getElementById("nombreCasaInput").value.trim() || ("Casa de " + datos.nombre.split(" ")[0]);
   const capacidad = parseInt(document.getElementById("capacidadCasaInput").value, 10);
   if (!capacidad || capacidad < 1) { showToast("Escribe una capacidad válida"); return; }
@@ -3125,7 +3138,7 @@ function crearCasaPropia() {
 function unirseCasaPropia(id) {
   if (!requiereSesion()) return;
   const datos = datosAlumno();
-  if (!datos) { showToast("Completa tu matrícula y nombre arriba en Cuenta primero"); return; }
+  if (!datos) { showToast(mensajeDiagnosticoDatos()); return; }
   database.ref(TRIP_CONFIG.firebaseRoot + "/casas_campamento/propia/" + id + "/miembros/" + idIdentidad()).set({
     nombre: datos.nombre, matricula: datos.matricula
   }).then(function () {
