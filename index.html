@@ -793,7 +793,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.11-r17"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.12-r18"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -1701,6 +1701,9 @@ document.addEventListener("DOMContentLoaded", function () {
         cargarKitTortuguero();
         mostrarReporteEPP();
       }
+      if (btn.dataset.tab === "participantes") {
+        renderParticipantes(ultimosAsientosData);
+      }
     });
   });
 
@@ -1762,6 +1765,7 @@ document.addEventListener("DOMContentLoaded", function () {
       mostrarReporteEPP();
       mostrarParesViejos();
       renderHospedaje();
+      renderParticipantes(ultimosAsientosData);
     } else {
       showToast("❌ Contraseña incorrecta");
     }
@@ -1781,6 +1785,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("coordAccesoCard").style.display = "none";
       showToast("🔓 Acceso a documentación concedido");
       mostrarReporteEPP();
+      renderParticipantes(ultimosAsientosData);
     } else {
       showToast("❌ Contraseña incorrecta");
     }
