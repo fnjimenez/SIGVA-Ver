@@ -512,6 +512,38 @@ body{
         <button class="btn success" id="asignarCamaBtn">✅ Asignar Cama</button>
       </div>
 
+      <div id="asignarAsientoBox" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--danger);">
+        <label style="font-weight:700;display:block;margin-bottom:6px;">🔧 Asignar Asiento Directamente (Admin/Coordinadores)</label>
+        <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Elige el número de asiento y la persona — se asigna sin requerir anticipo confirmado (es una asignación manual tuya).</p>
+        <label style="font-size:.8em;">Número de asiento</label>
+        <input type="number" id="asignarAsientoNumero" min="1" max="42" placeholder="Ej. 15" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
+        <label style="font-size:.8em;">Matrícula/empleado</label>
+        <input type="text" id="asignarAsientoMatricula" placeholder="U2303057N0061" style="width:100%;padding:8px;margin-bottom:4px;border-radius:8px;border:1px solid #ccc;">
+        <label style="font-size:.8em;">Nombre completo</label>
+        <input type="text" id="asignarAsientoNombre" placeholder="Nombre completo" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
+        <button class="btn success" id="asignarAsientoBtn">✅ Asignar Asiento</button>
+      </div>
+
+      <div id="asignarCasaBox" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--danger);">
+        <label style="font-weight:700;display:block;margin-bottom:6px;">🔧 Asignar Casa de Campaña Directamente (Admin/Coordinadores)</label>
+        <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Agrega a alguien a una casa YA existente, o crea una casa nueva con responsable asignado por ti.</p>
+        <label style="font-size:.8em;">Casa existente (o deja "Crear casa nueva" para crear una)</label>
+        <select id="asignarCasaSelect" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
+          <option value="">➕ Crear casa nueva</option>
+        </select>
+        <div id="asignarCasaNuevaCampos">
+          <label style="font-size:.8em;">Nombre de la casa nueva</label>
+          <input type="text" id="asignarCasaNombreNueva" placeholder="Ej. Casa de Ana" style="width:100%;padding:8px;margin-bottom:4px;border-radius:8px;border:1px solid #ccc;">
+          <label style="font-size:.8em;">Capacidad</label>
+          <input type="number" id="asignarCasaCapacidadNueva" min="1" max="20" value="4" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
+        </div>
+        <label style="font-size:.8em;">Matrícula/empleado de la persona a asignar</label>
+        <input type="text" id="asignarCasaMatricula" placeholder="U2303057N0061" style="width:100%;padding:8px;margin-bottom:4px;border-radius:8px;border:1px solid #ccc;">
+        <label style="font-size:.8em;">Nombre completo</label>
+        <input type="text" id="asignarCasaNombre" placeholder="Nombre completo" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
+        <button class="btn success" id="asignarCasaBtn">✅ Asignar a Casa de Campaña</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -761,7 +793,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.10-r15"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.11-r17"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -980,6 +1012,7 @@ function showToast(msg) {
    la contraseña que escriba se vuelve la suya.
    ============================================================ */
 let sesionActiva = false;
+let ultimosAsientosData = {};
 let sesionId = null;
 let sesionNombre = null; // fuente de verdad del nombre una vez logueado, no depende del campo del DOM
 
@@ -1718,8 +1751,11 @@ document.addEventListener("DOMContentLoaded", function () {
       isAdmin = true;
       document.getElementById("adminControls").style.display = "block";
       document.getElementById("asignarCamaBox").style.display = "block";
+      document.getElementById("asignarAsientoBox").style.display = "block";
+      document.getElementById("asignarCasaBox").style.display = "block";
       revelarPestanaPagos();
       poblarSelectCamas();
+      poblarSelectCasas();
       const docsBox = document.getElementById("adminDocsBox");
       if (docsBox) docsBox.style.display = "block";
       showToast("🔓 Acceso admin concedido");
@@ -1737,8 +1773,11 @@ document.addEventListener("DOMContentLoaded", function () {
       esCoordinador = true;
       document.getElementById("adminDocsBox").style.display = "block";
       document.getElementById("asignarCamaBox").style.display = "block";
+      document.getElementById("asignarAsientoBox").style.display = "block";
+      document.getElementById("asignarCasaBox").style.display = "block";
       revelarPestanaPagos();
       poblarSelectCamas();
+      poblarSelectCasas();
       document.getElementById("coordAccesoCard").style.display = "none";
       showToast("🔓 Acceso a documentación concedido");
       mostrarReporteEPP();
@@ -1766,6 +1805,9 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("limpiarParesViejosBtn").addEventListener("click", limpiarParesViejos);
   document.getElementById("guardarPagoBtn").addEventListener("click", agregarAbono);
   document.getElementById("asignarCamaBtn").addEventListener("click", asignarCamaDirecta);
+  document.getElementById("asignarAsientoBtn").addEventListener("click", asignarAsientoDirecta);
+  document.getElementById("asignarCasaBtn").addEventListener("click", asignarCasaDirecta);
+  document.getElementById("asignarCasaSelect").addEventListener("change", actualizarVisibilidadCasaNueva);
 
   buildBusMap();
   renderHospedaje();
@@ -2238,6 +2280,101 @@ function asignarCamaDirecta() {
     document.getElementById("asignarP2Nombre").value = "";
     renderHospedaje();
   });
+}
+
+/* ============================================================
+   ASIGNACIÓN DIRECTA DE ASIENTOS Y CASAS DE CAMPAÑA (admin)
+   ============================================================ */
+function asignarAsientoDirecta() {
+  if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
+  const num = parseInt(document.getElementById("asignarAsientoNumero").value, 10);
+  const id = document.getElementById("asignarAsientoMatricula").value.trim().toUpperCase();
+  const nombre = document.getElementById("asignarAsientoNombre").value.trim();
+  if (!num || num < 1 || num > TRIP_CONFIG.totalAsientos) { showToast("Escribe un número de asiento válido"); return; }
+  if (!id || !nombre) { showToast("Completa matrícula y nombre"); return; }
+
+  database.ref(TRIP_CONFIG.firebaseRoot + "/asientos/" + num).once("value").then(function (snap) {
+    if (snap.val()) { showToast("Ese asiento ya está ocupado — libéralo primero desde el Panel Admin"); return; }
+    database.ref(TRIP_CONFIG.firebaseRoot + "/asientos/" + num).set({
+      usuario: id, matricula: id, nombre: nombre, timestamp: Date.now()
+    }).then(function () {
+      showToast("✅ Asiento " + num + " asignado a " + nombre);
+      document.getElementById("asignarAsientoNumero").value = "";
+      document.getElementById("asignarAsientoMatricula").value = "";
+      document.getElementById("asignarAsientoNombre").value = "";
+    });
+  });
+}
+
+function poblarSelectCasas() {
+  const select = document.getElementById("asignarCasaSelect");
+  if (!select || !database) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/casas_campamento/propia").once("value").then(function (snap) {
+    const casas = snap.val() || {};
+    select.innerHTML = '<option value="">➕ Crear casa nueva</option>';
+    Object.keys(casas).forEach(function (key) {
+      const c = casas[key];
+      const ocupados = 1 + Object.keys(c.miembros || {}).length;
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = c.nombre + " (" + ocupados + "/" + c.capacidad + ")";
+      select.appendChild(opt);
+    });
+    actualizarVisibilidadCasaNueva();
+  });
+}
+
+function actualizarVisibilidadCasaNueva() {
+  const select = document.getElementById("asignarCasaSelect");
+  const camposNueva = document.getElementById("asignarCasaNuevaCampos");
+  if (select && camposNueva) camposNueva.style.display = select.value ? "none" : "block";
+}
+
+function asignarCasaDirecta() {
+  if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
+  const casaKey = document.getElementById("asignarCasaSelect").value;
+  const id = document.getElementById("asignarCasaMatricula").value.trim().toUpperCase();
+  const nombre = document.getElementById("asignarCasaNombre").value.trim();
+  if (!id || !nombre) { showToast("Completa matrícula y nombre de la persona a asignar"); return; }
+
+  if (!casaKey) {
+    // Crear casa nueva con esta persona como responsable
+    const nombreCasa = document.getElementById("asignarCasaNombreNueva").value.trim();
+    const capacidad = parseInt(document.getElementById("asignarCasaCapacidadNueva").value, 10) || 4;
+    if (!nombreCasa) { showToast("Escribe el nombre de la casa nueva"); return; }
+    database.ref(TRIP_CONFIG.firebaseRoot + "/casas_campamento/propia").push().set({
+      nombre: nombreCasa,
+      capacidad: capacidad,
+      responsable: { usuario: id, nombre: nombre, matricula: id },
+      miembros: {},
+      timestamp: Date.now()
+    }).then(function () {
+      showToast("✅ Casa \"" + nombreCasa + "\" creada con " + nombre + " como responsable");
+      limpiarCamposAsignarCasa();
+      poblarSelectCasas();
+    });
+    return;
+  }
+
+  // Agregar a una casa existente
+  const ref = database.ref(TRIP_CONFIG.firebaseRoot + "/casas_campamento/propia/" + casaKey);
+  ref.once("value").then(function (snap) {
+    const c = snap.val();
+    if (!c) { showToast("Esa casa ya no existe"); poblarSelectCasas(); return; }
+    const ocupados = 1 + Object.keys(c.miembros || {}).length;
+    if (ocupados >= c.capacidad) { showToast("Esa casa ya está completa"); return; }
+    ref.child("miembros/" + id).set({ nombre: nombre, matricula: id }).then(function () {
+      showToast("✅ " + nombre + " agregado(a) a \"" + c.nombre + "\"");
+      limpiarCamposAsignarCasa();
+      poblarSelectCasas();
+    });
+  });
+}
+
+function limpiarCamposAsignarCasa() {
+  document.getElementById("asignarCasaMatricula").value = "";
+  document.getElementById("asignarCasaNombre").value = "";
+  document.getElementById("asignarCasaNombreNueva").value = "";
 }
 
 function mostrarListaPagos() {
@@ -3258,6 +3395,7 @@ function reconfigurarCapacidadCasa(id, minimo) {
    PARTICIPANTES
    ============================================================ */
 function renderParticipantes(asientosData) {
+  ultimosAsientosData = asientosData || {};
   const cont = document.getElementById("listaParticipantes");
   const entries = Object.keys(asientosData || {}).sort(function (a, b) { return a - b; });
   if (entries.length === 0) {
@@ -3338,6 +3476,7 @@ function renderParticipantes(asientosData) {
       if (!numA && numB) return 1;
       return a - b; // ninguno tiene abono: se quedan en orden de asiento
     });
+    const puedeVerMontos = isAdmin || esCoordinador;
     entriesOrdenadas.forEach(function (num) {
       const p = asientosData[num];
       const hosp = hospedajeMap[p.usuario] || '<span style="color:var(--danger);">⚠️ sin hospedaje registrado</span>';
@@ -3346,11 +3485,14 @@ function renderParticipantes(asientosData) {
       const numeroBadge = numeroPorId[p.usuario]
         ? '<span style="background:var(--accent);color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:.75em;font-weight:800;margin-right:6px;">' + numeroPorId[p.usuario] + '</span>'
         : '<span style="background:#ccc;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:.7em;font-weight:800;margin-right:6px;">—</span>';
-      const infoAbono = prio ? ('$' + prio.total.toLocaleString() + ' · desde ' + prio.primeraFecha) : 'sin abonos registrados';
+      // El monto y fecha exacta de cada quien es privado — solo Admin/Coordinador lo ven.
+      const infoAbono = puedeVerMontos
+        ? (' · 💰 ' + (prio ? ('$' + prio.total.toLocaleString() + ' · desde ' + prio.primeraFecha) : 'sin abonos registrados'))
+        : '';
       html +=
         '<div class="participant-row" style="flex-direction:column;align-items:flex-start;gap:3px;">' +
           '<div style="display:flex;justify-content:space-between;width:100%;"><span>' + numeroBadge + '💺 Asiento ' + num + ' — ' + p.nombre + idAdmin + '</span><span>' + p.matricula + '</span></div>' +
-          '<div style="font-size:.82em;color:var(--muted);padding-left:30px;">' + hosp + ' · 💰 ' + infoAbono + '</div>' +
+          '<div style="font-size:.82em;color:var(--muted);padding-left:30px;">' + hosp + infoAbono + '</div>' +
         '</div>';
     });
 
@@ -3376,12 +3518,67 @@ function renderParticipantes(asientosData) {
     const sinAsiento = Object.keys(hospedajeMap).filter(function (uid) { return !idsConAsiento[uid]; });
     if (sinAsiento.length) {
       html += '<h3 style="margin-top:16px;color:var(--danger);">⚠️ Tienen hospedaje pero NO han elegido asiento</h3>';
+      if (isAdmin || esCoordinador) {
+        html += '<p style="font-size:.78em;color:var(--muted);margin-bottom:6px;">Casi siempre es la MISMA persona con un ID distinto al de su asiento (typo, sin acentos, etc.) — usa "Reasignar" para fusionarlo con su ID real.</p>';
+      }
       sinAsiento.forEach(function (uid) {
-        html += '<div class="participant-row"><span>' + (nombresPorId[uid] || uid) + '</span><span style="font-size:.85em;">' + hospedajeMap[uid] + '</span></div>';
+        const idVisible = (isAdmin || esCoordinador) ? ' <code style="font-size:.72em;color:var(--muted);">[' + uid + ']</code>' : '';
+        const botonReasignar = (isAdmin || esCoordinador)
+          ? '<button class="btn warning" style="width:auto;padding:4px 10px;font-size:.78em;margin-left:8px;" onclick="reasignarHospedaje(\'' + uid + '\')">🔧 Reasignar</button>'
+          : '';
+        html += '<div class="participant-row"><span>' + (nombresPorId[uid] || uid) + idVisible + '</span><span style="font-size:.85em;">' + hospedajeMap[uid] + botonReasignar + '</span></div>';
       });
     }
 
     cont.innerHTML = html;
+  });
+}
+
+function reasignarHospedaje(idViejo) {
+  if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
+  const idNuevo = prompt("Matrícula/empleado CORRECTO al que se debe fusionar este hospedaje (cópialo exacto de su asiento):", "");
+  if (!idNuevo) return;
+  const idNuevoLimpio = idNuevo.trim().toUpperCase();
+  if (!idNuevoLimpio || idNuevoLimpio === idViejo) { showToast("Escribe una matrícula distinta y válida"); return; }
+  const root = TRIP_CONFIG.firebaseRoot;
+
+  const rutas = [
+    root + "/camas_hotel",
+    root + "/casas_campamento/propia",
+    root + "/casas_campamento/glamping",
+    root + "/pares_cama_provisional"
+  ];
+
+  let encontrado = false;
+  const tareas = rutas.map(function (ruta) {
+    return database.ref(ruta).once("value").then(function (snap) {
+      const data = snap.val() || {};
+      const subTareas = [];
+      Object.keys(data).forEach(function (key) {
+        const item = data[key];
+        if (item.responsable && item.responsable.usuario === idViejo) {
+          encontrado = true;
+          subTareas.push(database.ref(ruta + "/" + key + "/responsable").update({ usuario: idNuevoLimpio, matricula: idNuevoLimpio }));
+        }
+        if (item.miembros && item.miembros[idViejo]) {
+          encontrado = true;
+          const datosMiembro = item.miembros[idViejo];
+          subTareas.push(
+            database.ref(ruta + "/" + key + "/miembros/" + idNuevoLimpio).set(Object.assign({}, datosMiembro, { matricula: idNuevoLimpio })).then(function () {
+              return database.ref(ruta + "/" + key + "/miembros/" + idViejo).remove();
+            })
+          );
+        }
+      });
+      return Promise.all(subTareas);
+    });
+  });
+
+  Promise.all(tareas).then(function () {
+    if (!encontrado) { showToast("No se encontró ningún registro de hospedaje con ese ID"); return; }
+    showToast("✅ Hospedaje fusionado con " + idNuevoLimpio);
+    renderParticipantes(ultimosAsientosData || {});
+    if (typeof renderHospedaje === "function") renderHospedaje();
   });
 }
 </script>
