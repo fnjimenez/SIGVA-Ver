@@ -200,6 +200,7 @@ body{
 .bed.parcial{background:#c9852c;}
 .bed.completa{background:#8e44ad;cursor:not-allowed;}
 .bed.mia{outline:3px solid var(--warning);}
+.iconos-ocupacion{display:block;font-size:1em;letter-spacing:1px;margin:3px 0;}
 
 .amenity-list{list-style:none;margin-top:8px;}
 .amenity-list li{padding:5px 0;font-size:.9em;}
@@ -793,7 +794,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.12-r18"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.12-r19"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -2463,6 +2464,15 @@ function reasignarAbonos(idViejo) {
   });
 }
 
+function iconosOcupacion(ocupados, capacidad) {
+  let html = '<span class="iconos-ocupacion">';
+  for (let i = 0; i < capacidad; i++) {
+    html += i < ocupados ? '🧍' : '<span style="opacity:.25;">🧍</span>';
+  }
+  html += '</span>';
+  return html;
+}
+
 function claveCamaLayout(hab, cama) { return "h" + hab + "_c" + cama; }
 
 function getCamaLayoutInfo(key) {
@@ -2517,7 +2527,7 @@ function renderCamas() {
         if (miembros.length >= capacidad) clase += " completa";
         if (cama && cama.miembros && cama.miembros[idIdentidad()]) { clase += " mia"; miCama = key; }
         const who = miembros.map(function (m) { return m.nombre.split(" ")[0]; }).join(" / ");
-        html += '<div class="' + clase + '" onclick="seleccionarCama(\'' + key + '\')"><span class="n">🛏️ ' + camaTipo.tipo + '</span><span class="who">' + miembros.length + '/' + capacidad + (who ? ' · ' + who : '') + '</span></div>';
+        html += '<div class="' + clase + '" onclick="seleccionarCama(\'' + key + '\')"><span class="n">🛏️ ' + camaTipo.tipo + '</span>' + iconosOcupacion(miembros.length, capacidad) + '<span class="who">' + miembros.length + '/' + capacidad + (who ? ' · ' + who : '') + '</span></div>';
       });
       html += '</div></div>';
     });
@@ -2657,7 +2667,7 @@ function renderListaGeneral(items, titulo, miIdActual) {
     html += '<details' + (esMio ? ' style="border:2px solid var(--warning);border-radius:8px;padding:6px 10px;"' : ' style="padding:6px 10px;"') + '>';
     html += '<summary style="cursor:pointer;display:flex;justify-content:space-between;list-style:none;">' +
       '<span>' + (item.nombre || "Registro") + ' — ' + respNombre + (esMio ? ' <b>(el tuyo)</b>' : '') + '</span>' +
-      '<span>' + ocupados + '/' + cap + '</span></summary>';
+      '<span>' + iconosOcupacion(ocupados, cap) + ' ' + ocupados + '/' + cap + '</span></summary>';
     html += '<ul style="margin-top:6px;font-size:.88em;">' + nombresLista + '</ul>';
     html += '</details>';
   });
@@ -2994,7 +3004,7 @@ function renderGlamping() {
       html += '<div class="card mine" style="border:2px solid var(--warning);">';
       html += '<h3>' + (soyResponsable ? "👑 Mi Tienda de Glamping (Responsable)" : "✨ Mi Tienda de Glamping") + '</h3>';
       html += '<p><b>Modalidad:</b> ' + c.nombre + '</p>';
-      html += '<p><b>Ocupación:</b> ' + ocupados + '/' + c.capacidad + ' personas</p>';
+      html += '<p><b>Ocupación:</b> ' + ocupados + '/' + c.capacidad + ' personas ' + iconosOcupacion(ocupados, c.capacidad) + '</p>';
       html += '<div class="progress"><div class="progress-fill" style="width:' + (ocupados / c.capacidad * 100) + '%"></div></div>';
 
       // Precio: usa el guardado al crear la tienda; si es una tienda creada
@@ -3227,7 +3237,7 @@ function renderCasasPropias() {
       html += '<div class="card mine" style="border:2px solid var(--warning);">';
       html += '<h3>' + (soyResponsable ? "👑 Mi Casa de Campaña (Responsable)" : "⛺ Mi Casa de Campaña") + '</h3>';
       html += '<p><b>Nombre:</b> ' + c.nombre + '</p>';
-      html += '<p><b>Ocupación:</b> ' + ocupados + '/' + c.capacidad + ' personas</p>';
+      html += '<p><b>Ocupación:</b> ' + ocupados + '/' + c.capacidad + ' personas ' + iconosOcupacion(ocupados, c.capacidad) + '</p>';
       html += '<div class="progress"><div class="progress-fill" style="width:' + (ocupados / c.capacidad * 100) + '%"></div></div>';
       html += '<p><b>Responsable:</b> ' + (c.responsable ? c.responsable.nombre : '(sin datos, registro editado manualmente)') + '</p>';
       if (Object.keys(c.miembros || {}).length) {
