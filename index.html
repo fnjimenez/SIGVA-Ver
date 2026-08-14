@@ -525,6 +525,14 @@ body{
         <button class="btn success" id="asignarAsientoBtn">✅ Asignar Asiento</button>
       </div>
 
+      <div id="resetPasswordBox" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--danger);">
+        <label style="font-weight:700;display:block;margin-bottom:6px;">🔑 Resetear Contraseña (Admin/Coordinadores)</label>
+        <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Las contraseñas están encriptadas — nadie (ni tú, ni nosotros) puede verlas o "descifrarlas". Si alguien la olvidó, esto borra su contraseña actual para que pueda crear una nueva con "Crear Cuenta" — su asiento, cama, casa y abonos NO se pierden, solo la contraseña.</p>
+        <label style="font-size:.8em;">Matrícula/empleado de quien olvidó su contraseña</label>
+        <input type="text" id="resetPasswordMatricula" placeholder="U2303057N0061 o EMP-1234" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
+        <button class="btn danger" id="resetPasswordBtn">🗑️ Resetear su Contraseña</button>
+      </div>
+
       <div id="asignarCasaBox" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--danger);">
         <label style="font-weight:700;display:block;margin-bottom:6px;">🔧 Asignar Casa de Campaña Directamente (Admin/Coordinadores)</label>
         <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Agrega a alguien a una casa YA existente, o crea una casa nueva con responsable asignado por ti.</p>
@@ -794,7 +802,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.12-r19"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.13-r20"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -1756,6 +1764,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("adminControls").style.display = "block";
       document.getElementById("asignarCamaBox").style.display = "block";
       document.getElementById("asignarAsientoBox").style.display = "block";
+      document.getElementById("resetPasswordBox").style.display = "block";
       document.getElementById("asignarCasaBox").style.display = "block";
       revelarPestanaPagos();
       poblarSelectCamas();
@@ -1779,6 +1788,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("adminDocsBox").style.display = "block";
       document.getElementById("asignarCamaBox").style.display = "block";
       document.getElementById("asignarAsientoBox").style.display = "block";
+      document.getElementById("resetPasswordBox").style.display = "block";
       document.getElementById("asignarCasaBox").style.display = "block";
       revelarPestanaPagos();
       poblarSelectCamas();
@@ -1812,6 +1822,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("guardarPagoBtn").addEventListener("click", agregarAbono);
   document.getElementById("asignarCamaBtn").addEventListener("click", asignarCamaDirecta);
   document.getElementById("asignarAsientoBtn").addEventListener("click", asignarAsientoDirecta);
+  document.getElementById("resetPasswordBtn").addEventListener("click", resetearContraseña);
   document.getElementById("asignarCasaBtn").addEventListener("click", asignarCasaDirecta);
   document.getElementById("asignarCasaSelect").addEventListener("change", actualizarVisibilidadCasaNueva);
 
@@ -2291,6 +2302,21 @@ function asignarCamaDirecta() {
 /* ============================================================
    ASIGNACIÓN DIRECTA DE ASIENTOS Y CASAS DE CAMPAÑA (admin)
    ============================================================ */
+function resetearContraseña() {
+  if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
+  const id = document.getElementById("resetPasswordMatricula").value.trim().toUpperCase();
+  if (!id) { showToast("Escribe la matrícula/empleado de esa persona"); return; }
+
+  database.ref(TRIP_CONFIG.firebaseRoot + "/passwords/" + id).once("value").then(function (snap) {
+    if (!snap.val()) { showToast("No existe ninguna cuenta con ese ID — revisa que esté bien escrito"); return; }
+    if (!confirm("¿Seguro que quieres resetear la contraseña de " + id + "? Podrá crear una nueva de inmediato. Su asiento/cama/casa/abonos NO se pierden.")) return;
+    database.ref(TRIP_CONFIG.firebaseRoot + "/passwords/" + id).remove().then(function () {
+      showToast("✅ Contraseña reseteada para " + id + " — ya puede crear una nueva");
+      document.getElementById("resetPasswordMatricula").value = "";
+    });
+  });
+}
+
 function asignarAsientoDirecta() {
   if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
   const num = parseInt(document.getElementById("asignarAsientoNumero").value, 10);
