@@ -334,7 +334,7 @@ body{
   <div class="fecha-card"><div class="dia">19</div><div class="mes">Agosto · Miérc.</div><div class="label">Salida nocturna desde San Felipe</div></div>
   <div class="fecha-card"><div class="dia">20</div><div class="mes">Agosto · Jueves</div><div class="label">La Corona + Planetario · Hotel</div></div>
   <div class="fecha-card"><div class="dia">21</div><div class="mes">Agosto · Viernes</div><div class="label">ICAVE + Acuario · Campamento</div></div>
-  <div class="fecha-card last"><div class="dia">22</div><div class="mes">Agosto · Sábado</div><div class="label">Tortugas + El Tajín · Regreso</div></div>
+  <div class="fecha-card last"><div class="dia">22</div><div class="mes">Agosto · Sábado</div><div class="label">Tortugas + El Tajín · Regreso (llegada madrugada dom. 23)</div></div>
 </div>
 
 <div id="resumenPendientesBox" style="max-width:900px;margin:0 auto;padding:0 14px;"></div>
@@ -347,6 +347,7 @@ body{
   <button class="tab-btn" data-tab="documentacion">📄 Documentación</button>
   <button class="tab-btn" data-tab="epp">🦺 EPP Y Seguridad</button>
   <button class="tab-btn" data-tab="pagos" id="tabPagosBtn" style="display:none;">💰 Pagos</button>
+  <button class="tab-btn" data-tab="comisiones">👮 Comisiones</button>
 </div>
 
 <!-- TAB INFORMACIÓN -->
@@ -354,23 +355,38 @@ body{
   <div class="card">
     <h2>🗺️ Itinerario</h2>
 
-    <div class="day-label">🌙 Miércoles 19 de Agosto - Salida</div>
-    <div class="itin-row"><div class="time">Noche</div><div class="desc">Salida nocturna desde Universidad SABES San Felipe.</div></div>
+    <div class="day-label">🌙 Miércoles 19 de Agosto</div>
+    <div class="itin-row"><div class="time">10:00</div><div class="desc">📍 Punto de reunión — atender asuntos pendientes, cargar equipaje, maletas y hieleras. <b>Universidad SABES, San Felipe</b> (Av. Universidad 300, Col. Fracc. Ojos Zarcos).</div></div>
+    <div class="itin-row"><div class="time">11:00 PM</div><div class="desc">🚌 Salida nocturna rumbo al Estado de México. Antes de subir: colocarse el EPP (calzado cerrado, pantalón, playera institucional, recoger cabello, quitarse joyería). <b>Desayunar antes de las 7:30 am</b>, antes de llegar a Xalostoc (o ya en Xalostoc).</div></div>
 
     <div class="day-label">📅 Jueves 20 de Agosto</div>
-    <div class="itin-row"><div class="time">08:00</div><div class="desc">🏭 Visita Fábrica La Corona (Xalostoc, Estado de México)</div></div>
-    <div class="itin-row"><div class="time">Tarde</div><div class="desc">🔭 Planetario "El Gran Ehécatl" (Ecatepec)</div></div>
-    <div class="itin-row"><div class="time">Noche</div><div class="desc">🏨 Hospedaje en La Estancia Real (Heroica Veracruz)</div></div>
+    <div class="itin-row"><div class="time">08:00</div><div class="desc">🏭 Visita académica a Fábrica de Jabón La Corona — Xalostoc, Estado de México.</div></div>
+    <div class="itin-row"><div class="time">11:00</div><div class="desc">🚌 Traslado al Parque Ecológico Ehécatl. <b>Almorzar antes de las 11:30 am</b>, antes de llegar al parque en Ecatepec — cambien de calzado si pueden, para mayor comodidad, y vayan al sanitario antes del recorrido.</div></div>
+    <div class="itin-row"><div class="time">11:30</div><div class="desc">🏺 Visita al Museo de Sitio de Vestigios Arqueológicos del Parque Ecológico Ehécatl (Ecatepec de Morelos).</div></div>
+    <div class="itin-row"><div class="time">12:00</div><div class="desc">🔭 Visita al Planetario "El Gran Ehécatl" — Domo Digital (Ecatepec de Morelos).</div></div>
+    <div class="itin-row"><div class="time">13:00</div><div class="desc">🚌 Traslado a Veracruz, Ciudad Puerto de Veracruz.</div></div>
+    <div class="itin-row"><div class="time">19:00</div><div class="desc">🏠 Llegada a Veracruz — <b>La Estancia Real</b>, Juan Enríquez 1387, Heroica Veracruz, Ver.</div></div>
+    <div class="itin-row"><div class="time">18:00–19:30</div><div class="desc">🛏️ Instalarse en sus espacios asignados, cambiarse a ropa cómoda, comer algo, bañarse.</div></div>
+    <div class="itin-row"><div class="time">19:30–21:30</div><div class="desc">🚶 Recorrido peatonal opcional Zócalo — Malecón Puerto, dirección Malecón Boca del Río. Regresar al hospedaje a descansar — al día siguiente salimos temprano a Hutchison Ports ICAVE.</div></div>
 
     <div class="day-label">📅 Viernes 21 de Agosto</div>
-    <div class="itin-row"><div class="time">Mañana</div><div class="desc">🚢 Hutchison Ports ICAVE (Puerto de Veracruz)</div></div>
-    <div class="itin-row"><div class="time">Medio día</div><div class="desc">🐠 Acuario de Veracruz</div></div>
-    <div class="itin-row"><div class="time">Noche</div><div class="desc">🐢 Liberación de tortugas con Vida Milenaria A.C. — pernocta en Cabañas Don Chico</div></div>
+    <div class="itin-row"><div class="time">6:00–7:30</div><div class="desc">☀️ Levantarse temprano, desayunar, acomodar maletas. <b>La Estancia Real</b>, Heroica Veracruz.</div></div>
+    <div class="itin-row"><div class="time">08:00</div><div class="desc">🚌 Traslado a Hutchison Ports ICAVE (Puerto de Veracruz).</div></div>
+    <div class="itin-row"><div class="time">09:00</div><div class="desc">🚢 Visita académica a Hutchison Ports ICAVE — Ave. Morelos No. 159 esq. Emparan, Col. Centro, Veracruz.</div></div>
+    <div class="itin-row"><div class="time">12:00</div><div class="desc">🚌 Traslado al Aquarium del Puerto de Veracruz.</div></div>
+    <div class="itin-row"><div class="time">12:45</div><div class="desc">🐠 Visita al Aquarium del Puerto de Veracruz — Blvd. Manuel Ávila Camacho.</div></div>
+    <div class="itin-row"><div class="time">14:45</div><div class="desc">🏖️ Receso de 1 hora en Playa Villa del Mar.</div></div>
+    <div class="itin-row"><div class="time">15:45</div><div class="desc">🚌 Traslado a Tecolutla, Veracruz.</div></div>
+    <div class="itin-row"><div class="time">17:30</div><div class="desc">⛺ Llegada y pernocta en <b>Cabañas Don Chico</b> — Camino Real km 7 (Isla Santa María Barra de), Boca de Lima, Tecolutla, Ver. <b>Instalar casas de campaña antes de oscurecer</b>, relajarse, cenar, organizar fogata nocturna — sin molestar a los demás huéspedes de las instalaciones.</div></div>
 
     <div class="day-label">📅 Sábado 22 de Agosto</div>
-    <div class="itin-row"><div class="time">Mañana</div><div class="desc">🐢 Liberación de tortugas (por temporada)</div></div>
-    <div class="itin-row"><div class="time">Día</div><div class="desc">🏛️ Zona Arqueológica El Tajín</div></div>
-    <div class="itin-row"><div class="time">Noche</div><div class="desc">🚌 Regreso a Universidad SABES San Felipe</div></div>
+    <div class="itin-row"><div class="time">05:00</div><div class="desc">⏰ Despertar y prepararse para moverse al campamento Vida Milenaria (en silencio, sin molestar a otros huéspedes).</div></div>
+    <div class="itin-row"><div class="time">05:30</div><div class="desc">🐢 Actividad de liberación de tortugas — Campamento Tortuguero Vida Milenaria, Campus Norte.</div></div>
+    <div class="itin-row"><div class="time">08:00</div><div class="desc">🏖️ Tiempo libre (playa, descansar, desayunar, comer) en Cabañas Don Chico.</div></div>
+    <div class="itin-row"><div class="time">13:30</div><div class="desc">🚌 Traslado a la Zona de Monumentos Arqueológicos de El Tajín (ZMAET).</div></div>
+    <div class="itin-row"><div class="time">15:30</div><div class="desc">🏛️ Visita guiada a El Tajín — Carretera Federal No. 120 Km 130, Papantla, Ver. (al salir pueden comer y comprar artesanías).</div></div>
+    <div class="itin-row"><div class="time">18:00</div><div class="desc">🚌 Salida de regreso a Universidad SABES San Felipe.</div></div>
+    <div class="itin-row"><div class="time">00:00–02:00</div><div class="desc">🏫 Llegada a Universidad SABES San Felipe — <b>domingo 23 de agosto, de madrugada</b>. La hora exacta es variable (puede ser antes o después), avisen a sus papás para que los recojan considerando este horario.</div></div>
 
     <!-- Nota interna (no visible a alumnos): horarios sujetos a confirmación de cada sede; editar arriba en TAB INFORMACIÓN -->
   </div>
@@ -782,6 +798,30 @@ body{
   </div>
 </div>
 
+<!-- TAB COMISIONES -->
+<div class="tab-content" id="tab-comisiones">
+  <div class="card">
+    <h2>👮 Comisiones del Viaje</h2>
+    <p style="font-size:.85em;color:var(--muted);margin-bottom:12px;">Alumnos con responsabilidades extra de organización, seguridad y logística durante el viaje.</p>
+    <div id="comisionesListaBox"><p style="color:#999;">Cargando...</p></div>
+
+    <div id="comisionesAdminBox" style="display:none;margin-top:20px;padding-top:16px;border-top:2px dashed var(--danger);">
+      <h3 style="color:var(--danger);">🔐 Asignar Comisión (Admin/Coordinadores)</h3>
+      <label style="font-size:.8em;">Matrícula/empleado del alumno</label>
+      <input type="text" id="comisionMatricula" placeholder="U2303057N0061" style="width:100%;padding:8px;margin-bottom:4px;border-radius:8px;border:1px solid #ccc;">
+      <label style="font-size:.8em;">Nombre completo</label>
+      <input type="text" id="comisionNombre" placeholder="Nombre completo" style="width:100%;padding:8px;margin-bottom:10px;border-radius:8px;border:1px solid #ccc;">
+      <label style="font-size:.85em;font-weight:700;display:block;margin-bottom:6px;">Roles (puede tener varios):</label>
+      <label class="req-check"><input type="checkbox" id="rolHospedaje"> 🪢 Equipo de Hospedaje (revisión de camas/cuartos, instalación de tiendas)</label>
+      <label class="req-check"><input type="checkbox" id="rolEpp"> 🦺 Equipo de EPP y Acceso (vestimenta, credenciales, checklist antes de entrar)</label>
+      <label class="req-check"><input type="checkbox" id="rolDespertar"> ⏰ Equipo de Despertar (5:00 am, en silencio)</label>
+      <label class="req-check"><input type="checkbox" id="rolOrganizacion"> 👥 Equipo de Organización General (pase de lista, avance de horarios)</label>
+      <button class="btn success" id="guardarComisionBtn" style="margin-top:10px;">✅ Guardar Comisión</button>
+      <button class="btn danger" id="quitarComisionBtn" style="margin-top:6px;">🗑️ Quitar de todas las comisiones</button>
+    </div>
+  </div>
+</div>
+
 </div> <!-- cierre de #appContenido -->
 
 <div class="mascota-wrap" id="mascotaWrap">
@@ -802,7 +842,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.13-r20"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.19-r22"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -1078,6 +1118,7 @@ function actualizarEstadoSesionUI() {
     cargarChecklistEPP();
     activarPresencia();
     mostrarResumenPendientes();
+    mostrarComisiones();
   } else {
     box.innerHTML = "";
     const resumenBox = document.getElementById("resumenPendientesBox");
@@ -1713,6 +1754,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (btn.dataset.tab === "participantes") {
         renderParticipantes(ultimosAsientosData);
       }
+      if (btn.dataset.tab === "comisiones") {
+        mostrarComisiones();
+      }
     });
   });
 
@@ -1765,6 +1809,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("asignarCamaBox").style.display = "block";
       document.getElementById("asignarAsientoBox").style.display = "block";
       document.getElementById("resetPasswordBox").style.display = "block";
+      document.getElementById("comisionesAdminBox").style.display = "block";
       document.getElementById("asignarCasaBox").style.display = "block";
       revelarPestanaPagos();
       poblarSelectCamas();
@@ -1789,6 +1834,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("asignarCamaBox").style.display = "block";
       document.getElementById("asignarAsientoBox").style.display = "block";
       document.getElementById("resetPasswordBox").style.display = "block";
+      document.getElementById("comisionesAdminBox").style.display = "block";
       document.getElementById("asignarCasaBox").style.display = "block";
       revelarPestanaPagos();
       poblarSelectCamas();
@@ -1823,6 +1869,8 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("asignarCamaBtn").addEventListener("click", asignarCamaDirecta);
   document.getElementById("asignarAsientoBtn").addEventListener("click", asignarAsientoDirecta);
   document.getElementById("resetPasswordBtn").addEventListener("click", resetearContraseña);
+  document.getElementById("guardarComisionBtn").addEventListener("click", guardarComision);
+  document.getElementById("quitarComisionBtn").addEventListener("click", quitarComision);
   document.getElementById("asignarCasaBtn").addEventListener("click", asignarCasaDirecta);
   document.getElementById("asignarCasaSelect").addEventListener("change", actualizarVisibilidadCasaNueva);
 
@@ -2296,6 +2344,85 @@ function asignarCamaDirecta() {
     document.getElementById("asignarP2Matricula").value = "";
     document.getElementById("asignarP2Nombre").value = "";
     renderHospedaje();
+  });
+}
+
+/* ============================================================
+   COMISIONES DEL VIAJE (roles de organización asignados por admin)
+   ============================================================ */
+const ROLES_COMISION = {
+  hospedaje: { emoji: "🪢", label: "Equipo de Hospedaje" },
+  epp: { emoji: "🦺", label: "Equipo de EPP y Acceso" },
+  despertar: { emoji: "⏰", label: "Equipo de Despertar" },
+  organizacion: { emoji: "👥", label: "Equipo de Organización General" }
+};
+
+function guardarComision() {
+  if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
+  const id = document.getElementById("comisionMatricula").value.trim().toUpperCase();
+  const nombre = document.getElementById("comisionNombre").value.trim();
+  if (!id || !nombre) { showToast("Completa matrícula y nombre"); return; }
+  const roles = {
+    hospedaje: document.getElementById("rolHospedaje").checked,
+    epp: document.getElementById("rolEpp").checked,
+    despertar: document.getElementById("rolDespertar").checked,
+    organizacion: document.getElementById("rolOrganizacion").checked
+  };
+  if (!roles.hospedaje && !roles.epp && !roles.despertar && !roles.organizacion) {
+    showToast("Marca al menos un rol"); return;
+  }
+  database.ref(TRIP_CONFIG.firebaseRoot + "/comisiones/" + id).set({ nombre: nombre, matricula: id, roles: roles }).then(function () {
+    showToast("✅ Comisión guardada para " + nombre);
+    document.getElementById("comisionMatricula").value = "";
+    document.getElementById("comisionNombre").value = "";
+    ["rolHospedaje", "rolEpp", "rolDespertar", "rolOrganizacion"].forEach(function (elId) { document.getElementById(elId).checked = false; });
+    mostrarComisiones();
+  });
+}
+
+function quitarComision() {
+  if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
+  const id = document.getElementById("comisionMatricula").value.trim().toUpperCase();
+  if (!id) { showToast("Escribe la matrícula/empleado a quitar"); return; }
+  if (!confirm("¿Quitar a " + id + " de todas sus comisiones?")) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/comisiones/" + id).remove().then(function () {
+    showToast("Comisión quitada");
+    document.getElementById("comisionMatricula").value = "";
+    document.getElementById("comisionNombre").value = "";
+    mostrarComisiones();
+  });
+}
+
+function mostrarComisiones() {
+  const box = document.getElementById("comisionesListaBox");
+  if (!box || !database) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/comisiones").once("value").then(function (snap) {
+    const data = snap.val() || {};
+    const porRol = { hospedaje: [], epp: [], despertar: [], organizacion: [] };
+    Object.values(data).forEach(function (persona) {
+      Object.keys(ROLES_COMISION).forEach(function (rol) {
+        if (persona.roles && persona.roles[rol]) porRol[rol].push(persona.nombre);
+      });
+    });
+
+    const hayAlguno = Object.keys(data).length > 0;
+    if (!hayAlguno) { box.innerHTML = '<p style="color:#999;">Aún no hay comisiones asignadas.</p>'; return; }
+
+    let html = "";
+    Object.keys(ROLES_COMISION).forEach(function (rol) {
+      const info = ROLES_COMISION[rol];
+      html += '<div class="card" style="box-shadow:none;border:1px solid var(--border);margin-top:10px;">';
+      html += '<h3>' + info.emoji + ' ' + info.label + '</h3>';
+      if (porRol[rol].length === 0) {
+        html += '<p style="color:#999;font-size:.85em;">Nadie asignado todavía.</p>';
+      } else {
+        html += '<ul style="margin-top:4px;">';
+        porRol[rol].forEach(function (nombre) { html += '<li>' + nombre + '</li>'; });
+        html += '</ul>';
+      }
+      html += '</div>';
+    });
+    box.innerHTML = html;
   });
 }
 
