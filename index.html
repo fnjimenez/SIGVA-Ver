@@ -367,7 +367,7 @@ body{
     <div class="itin-row"><div class="time">13:00</div><div class="desc">🚌 Traslado a Veracruz, Ciudad Puerto de Veracruz.</div></div>
     <div class="itin-row"><div class="time">19:00</div><div class="desc">🏠 Llegada a Veracruz — <b>La Estancia Real</b>, Juan Enríquez 1387, Heroica Veracruz, Ver.</div></div>
     <div class="itin-row"><div class="time">18:00–19:30</div><div class="desc">🛏️ Instalarse en sus espacios asignados, cambiarse a ropa cómoda, comer algo, bañarse.</div></div>
-    <div class="itin-row"><div class="time">19:30–21:30</div><div class="desc">🚶 Recorrido peatonal Zócalo — Malecón Puerto, dirección Malecón Boca del Río. Regresar al hospedaje a descansar — al día siguiente salimos temprano a Hutchison Ports ICAVE.</div></div>
+    <div class="itin-row"><div class="time">19:30–21:30</div><div class="desc">🚶 Recorrido peatonal opcional Zócalo — Malecón Puerto, dirección Malecón Boca del Río. Regresar al hospedaje a descansar — al día siguiente salimos temprano a Hutchison Ports ICAVE.</div></div>
 
     <div class="day-label">📅 Viernes 21 de Agosto</div>
     <div class="itin-row"><div class="time">6:00–7:30</div><div class="desc">☀️ Levantarse temprano, desayunar, acomodar maletas. <b>La Estancia Real</b>, Heroica Veracruz.</div></div>
@@ -471,15 +471,16 @@ body{
       <span><span class="box" style="background:var(--primary-light)"></span>Disponible</span>
       <span><span class="box" style="background:#8e44ad"></span>Ocupado</span>
       <span><span class="box" style="background:var(--warning)"></span>Mi asiento</span>
-      <span><span class="box" style="background:#9099ab"></span>Sanitario</span>
     </div>
 
     <div id="alertaAsiento"></div>
 
+    <div class="alert warning">🚌 Este autobús (Mercedes Benz, Diesel, 44 pasajeros) <b>NO cuenta con sanitario a bordo</b> — vayan al baño antes de cada salida, se harán paradas en el trayecto según el itinerario.</div>
+
     <div class="bus-wrap">
       <div class="bus-dir">▲ FRENTE DEL AUTOBÚS (conductor)</div>
       <div class="bus-body" id="busBody"></div>
-      <div class="bus-back-label">▼ PARTE TRASERA DEL AUTOBÚS · SANITARIO (WC)</div>
+      <div class="bus-back-label">▼ PARTE TRASERA DEL AUTOBÚS</div>
     </div>
 
     <div id="miAsientoBox" style="margin-top:16px;"></div>
@@ -495,7 +496,7 @@ body{
         <button class="btn danger" id="liberarTodoBtn">🗑️ Liberar TODOS los asientos</button>
         <div style="margin-top:10px;">
           <label style="font-size:.85em;font-weight:700;display:block;margin-bottom:4px;">Liberar un asiento específico</label>
-          <input type="number" id="asientoEspecificoInput" min="1" max="42" placeholder="Ej. 2" style="width:100%;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #ccc;">
+          <input type="number" id="asientoEspecificoInput" min="1" max="44" placeholder="Ej. 2" style="width:100%;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #ccc;">
           <button class="btn warning" id="liberarAsientoEspecificoBtn">🔓 Liberar ese asiento</button>
         </div>
 
@@ -533,7 +534,7 @@ body{
         <label style="font-weight:700;display:block;margin-bottom:6px;">🔧 Asignar Asiento Directamente (Admin/Coordinadores)</label>
         <p style="font-size:.78em;color:var(--muted);margin-bottom:8px;">Elige el número de asiento y la persona — se asigna sin requerir anticipo confirmado (es una asignación manual tuya).</p>
         <label style="font-size:.8em;">Número de asiento</label>
-        <input type="number" id="asignarAsientoNumero" min="1" max="42" placeholder="Ej. 15" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
+        <input type="number" id="asignarAsientoNumero" min="1" max="44" placeholder="Ej. 15" style="width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
         <label style="font-size:.8em;">Matrícula/empleado</label>
         <input type="text" id="asignarAsientoMatricula" placeholder="U2303057N0061" style="width:100%;padding:8px;margin-bottom:4px;border-radius:8px;border:1px solid #ccc;">
         <label style="font-size:.8em;">Nombre completo</label>
@@ -812,10 +813,7 @@ body{
       <label style="font-size:.8em;">Nombre completo</label>
       <input type="text" id="comisionNombre" placeholder="Nombre completo" style="width:100%;padding:8px;margin-bottom:10px;border-radius:8px;border:1px solid #ccc;">
       <label style="font-size:.85em;font-weight:700;display:block;margin-bottom:6px;">Roles (puede tener varios):</label>
-      <label class="req-check"><input type="checkbox" id="rolHospedaje"> 🪢 Equipo de Hospedaje (revisión de camas/cuartos, instalación de tiendas)</label>
-      <label class="req-check"><input type="checkbox" id="rolEpp"> 🦺 Equipo de EPP y Acceso (vestimenta, credenciales, checklist antes de entrar)</label>
-      <label class="req-check"><input type="checkbox" id="rolDespertar"> ⏰ Equipo de Despertar (5:00 am, en silencio)</label>
-      <label class="req-check"><input type="checkbox" id="rolOrganizacion"> 👥 Equipo de Organización General (pase de lista, avance de horarios)</label>
+      <div id="rolesCheckboxesBox"></div>
       <button class="btn success" id="guardarComisionBtn" style="margin-top:10px;">✅ Guardar Comisión</button>
       <button class="btn danger" id="quitarComisionBtn" style="margin-top:6px;">🗑️ Quitar de todas las comisiones</button>
     </div>
@@ -842,11 +840,11 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.19-r22"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.19-r24"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
-  totalAsientos: 42,
+  totalAsientos: 44,
   hotel: {
     // Layout REAL de la casa reservada en Veracruz (La Estancia Real, Heroica Veracruz).
     // Cada habitación tiene sus propias camas con su tipo y capacidad.
@@ -1669,6 +1667,7 @@ function datosAlumno() {
 document.addEventListener("DOMContentLoaded", function () {
   const vEl = document.getElementById("versionSistema");
   if (vEl) vEl.textContent = "Sistema " + SIGVA_VERSION;
+  dibujarCasillasRoles();
   cargarPrellenado();
   document.getElementById("matriculaInput").addEventListener("input", guardarPrellenado);
   document.getElementById("nombreInput").addEventListener("input", guardarPrellenado);
@@ -1899,15 +1898,14 @@ function startCountdown() {
 
 /* ============================================================
    MAPA DE ASIENTOS
-   42 asientos: 10 filas de 4 (numeración corrida 1..40, de frente
-   a atrás) + fila final con 2 asientos (41, 42) y el sanitario
-   (WC) ocupando el resto del ancho, EN LA PARTE TRASERA.
+   44 asientos: 11 filas de 4 (numeración corrida 1..44, de frente
+   a atrás). Mercedes Benz Diesel, 44 pasajeros, SIN sanitario a bordo.
    ============================================================ */
 function buildBusMap() {
   const body = document.getElementById("busBody");
   body.innerHTML = "";
   let n = 1;
-  const filasCompletas = 10; // 10 x 4 = 40 asientos
+  const filasCompletas = 11; // 11 x 4 = 44 asientos (Mercedes Benz Diesel 44 pasajeros, sin sanitario)
 
   for (let f = 0; f < filasCompletas; f++) {
     const row = document.createElement("div");
@@ -1925,20 +1923,6 @@ function buildBusMap() {
     row.appendChild(makeSeat(n++));
     body.appendChild(row);
   }
-
-  // Última fila: 2 asientos + sanitario (parte trasera)
-  const lastRow = document.createElement("div");
-  lastRow.className = "bus-row";
-  lastRow.appendChild(makeSeat(n++)); // 41
-  lastRow.appendChild(makeSeat(n++)); // 42
-  const aisleLast = document.createElement("div");
-  aisleLast.className = "aisle-mark";
-  lastRow.appendChild(aisleLast);
-  const wc = document.createElement("div");
-  wc.className = "seat wc";
-  wc.textContent = "🚻 WC";
-  lastRow.appendChild(wc);
-  body.appendChild(lastRow);
 }
 
 function makeSeat(num) {
@@ -2354,28 +2338,48 @@ const ROLES_COMISION = {
   hospedaje: { emoji: "🪢", label: "Equipo de Hospedaje" },
   epp: { emoji: "🦺", label: "Equipo de EPP y Acceso" },
   despertar: { emoji: "⏰", label: "Equipo de Despertar" },
-  organizacion: { emoji: "👥", label: "Equipo de Organización General" }
+  organizacion: { emoji: "👥", label: "Equipo de Organización General" },
+  conteo: { emoji: "🔢", label: "Equipo de Conteo de Personas" },
+  alimentacion: { emoji: "🍽️", label: "Equipo de Alimentación" },
+  equipaje: { emoji: "🧳", label: "Equipo de Equipaje y Carga" },
+  playa: { emoji: "🏖️", label: "Equipo de Playa y Actividades Libres" },
+  fogata: { emoji: "🔥", label: "Equipo de Fogata Nocturna" },
+  documentacion: { emoji: "📸", label: "Equipo de Documentación (fotos/video)" },
+  comportamiento: { emoji: "👁️", label: "Equipo de Vigilancia de Comportamiento" }
 };
+
+function dibujarCasillasRoles() {
+  const box = document.getElementById("rolesCheckboxesBox");
+  if (!box) return;
+  let html = "";
+  Object.keys(ROLES_COMISION).forEach(function (rol) {
+    const info = ROLES_COMISION[rol];
+    html += '<label class="req-check"><input type="checkbox" id="rol_' + rol + '"> ' + info.emoji + ' ' + info.label + '</label>';
+  });
+  box.innerHTML = html;
+}
 
 function guardarComision() {
   if (!isAdmin && !esCoordinador) { showToast("Solo Admin/Coordinadores pueden hacer esto"); return; }
   const id = document.getElementById("comisionMatricula").value.trim().toUpperCase();
   const nombre = document.getElementById("comisionNombre").value.trim();
   if (!id || !nombre) { showToast("Completa matrícula y nombre"); return; }
-  const roles = {
-    hospedaje: document.getElementById("rolHospedaje").checked,
-    epp: document.getElementById("rolEpp").checked,
-    despertar: document.getElementById("rolDespertar").checked,
-    organizacion: document.getElementById("rolOrganizacion").checked
-  };
-  if (!roles.hospedaje && !roles.epp && !roles.despertar && !roles.organizacion) {
-    showToast("Marca al menos un rol"); return;
-  }
+  const roles = {};
+  let algunoMarcado = false;
+  Object.keys(ROLES_COMISION).forEach(function (rol) {
+    const chk = document.getElementById("rol_" + rol);
+    roles[rol] = !!(chk && chk.checked);
+    if (roles[rol]) algunoMarcado = true;
+  });
+  if (!algunoMarcado) { showToast("Marca al menos un rol"); return; }
   database.ref(TRIP_CONFIG.firebaseRoot + "/comisiones/" + id).set({ nombre: nombre, matricula: id, roles: roles }).then(function () {
     showToast("✅ Comisión guardada para " + nombre);
     document.getElementById("comisionMatricula").value = "";
     document.getElementById("comisionNombre").value = "";
-    ["rolHospedaje", "rolEpp", "rolDespertar", "rolOrganizacion"].forEach(function (elId) { document.getElementById(elId).checked = false; });
+    Object.keys(ROLES_COMISION).forEach(function (rol) {
+      const chk = document.getElementById("rol_" + rol);
+      if (chk) chk.checked = false;
+    });
     mostrarComisiones();
   });
 }
@@ -2398,7 +2402,8 @@ function mostrarComisiones() {
   if (!box || !database) return;
   database.ref(TRIP_CONFIG.firebaseRoot + "/comisiones").once("value").then(function (snap) {
     const data = snap.val() || {};
-    const porRol = { hospedaje: [], epp: [], despertar: [], organizacion: [] };
+    const porRol = {};
+    Object.keys(ROLES_COMISION).forEach(function (rol) { porRol[rol] = []; });
     Object.values(data).forEach(function (persona) {
       Object.keys(ROLES_COMISION).forEach(function (rol) {
         if (persona.roles && persona.roles[rol]) porRol[rol].push(persona.nombre);
