@@ -808,6 +808,10 @@ body{
 
     <div id="comisionesAdminBox" style="display:none;margin-top:20px;padding-top:16px;border-top:2px dashed var(--danger);">
       <h3 style="color:var(--danger);">🔐 Asignar Comisión (Admin/Coordinadores)</h3>
+      <label style="font-size:.8em;">Elegir de la lista de alumnos registrados</label>
+      <select id="comisionSelectAlumno" style="width:100%;padding:8px;margin-bottom:10px;border-radius:8px;border:1px solid #ccc;">
+        <option value="">— Selecciona un alumno o captúralo manual abajo —</option>
+      </select>
       <label style="font-size:.8em;">Matrícula/empleado del alumno</label>
       <input type="text" id="comisionMatricula" placeholder="U2303057N0061" style="width:100%;padding:8px;margin-bottom:4px;border-radius:8px;border:1px solid #ccc;">
       <label style="font-size:.8em;">Nombre completo</label>
@@ -840,7 +844,7 @@ body{
 /* ============================================================
    CONFIGURACIÓN DEL VIAJE - editar aquí lo que cambie cada viaje
    ============================================================ */
-const SIGVA_VERSION = "v2026.08.20-r27"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
+const SIGVA_VERSION = "v2026.08.20-r29"; // Actualizar este texto en cada entrega para poder identificar la versión en pantalla
 
 const TRIP_CONFIG = {
   fechaSalida: "2026-08-19T23:00:00-06:00", // Miércoles 19 de agosto, 11:00 PM hora de México (UTC-6)
@@ -995,6 +999,17 @@ function mostrarNudgeTuga(mensaje, key) {
   setTimeout(function () { burbuja.style.display = "none"; }, 8000);
 }
 
+let avisoRevisarMostrado = false; // se resetea cada vez que se recarga la página (no usa localStorage a propósito)
+function mostrarAvisoRevisarPestanas() {
+  if (avisoRevisarMostrado) return;
+  avisoRevisarMostrado = true;
+  const burbuja = document.getElementById("mascotaBurbuja");
+  if (!burbuja) return;
+  burbuja.textContent = "💰 No olvides revisar 🏨 Hospedaje (si te falta pagar o te toca reembolso) y 👮 Comisiones (si te asignaron algún rol).";
+  burbuja.style.display = "block";
+  setTimeout(function () { burbuja.style.display = "none"; }, 10000);
+}
+
 /* ============================================================
    PREGUNTAS FRECUENTES DE TUGA (búsqueda por palabra clave,
    sin conexión a IA — respuestas ya escritas)
@@ -1117,6 +1132,7 @@ function actualizarEstadoSesionUI() {
     activarPresencia();
     mostrarResumenPendientes();
     mostrarComisiones();
+    setTimeout(mostrarAvisoRevisarPestanas, 4000);
   } else {
     box.innerHTML = "";
     const resumenBox = document.getElementById("resumenPendientesBox");
@@ -1809,6 +1825,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("asignarAsientoBox").style.display = "block";
       document.getElementById("resetPasswordBox").style.display = "block";
       document.getElementById("comisionesAdminBox").style.display = "block";
+      poblarSelectAlumnosComision();
       document.getElementById("asignarCasaBox").style.display = "block";
       revelarPestanaPagos();
       poblarSelectCamas();
@@ -1834,6 +1851,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("asignarAsientoBox").style.display = "block";
       document.getElementById("resetPasswordBox").style.display = "block";
       document.getElementById("comisionesAdminBox").style.display = "block";
+      poblarSelectAlumnosComision();
       document.getElementById("asignarCasaBox").style.display = "block";
       revelarPestanaPagos();
       poblarSelectCamas();
@@ -1869,6 +1887,13 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("asignarAsientoBtn").addEventListener("click", asignarAsientoDirecta);
   document.getElementById("resetPasswordBtn").addEventListener("click", resetearContraseña);
   document.getElementById("guardarComisionBtn").addEventListener("click", guardarComision);
+  document.getElementById("comisionSelectAlumno").addEventListener("change", function () {
+    const opt = this.options[this.selectedIndex];
+    if (this.value) {
+      document.getElementById("comisionMatricula").value = this.value;
+      document.getElementById("comisionNombre").value = opt.dataset.nombre || "";
+    }
+  });
   document.getElementById("quitarComisionBtn").addEventListener("click", quitarComision);
   document.getElementById("asignarCasaBtn").addEventListener("click", asignarCasaDirecta);
   document.getElementById("asignarCasaSelect").addEventListener("change", actualizarVisibilidadCasaNueva);
@@ -2362,6 +2387,24 @@ const ROLES_COMISION = {
   documentacion: { emoji: "📸", label: "Equipo de Documentación (fotos/video)" },
   comportamiento: { emoji: "👁️", label: "Equipo de Vigilancia de Comportamiento" }
 };
+
+function poblarSelectAlumnosComision() {
+  const select = document.getElementById("comisionSelectAlumno");
+  if (!select || !database) return;
+  database.ref(TRIP_CONFIG.firebaseRoot + "/asientos").once("value").then(function (snap) {
+    const asientos = snap.val() || {};
+    const entries = Object.keys(asientos).sort(function (a, b) { return a - b; });
+    select.innerHTML = '<option value="">— Selecciona un alumno o captúralo manual abajo —</option>';
+    entries.forEach(function (num) {
+      const p = asientos[num];
+      const opt = document.createElement("option");
+      opt.value = p.usuario;
+      opt.textContent = "Asiento " + num + " — " + p.nombre + " (" + p.matricula + ")";
+      opt.dataset.nombre = p.nombre;
+      select.appendChild(opt);
+    });
+  });
+}
 
 function dibujarCasillasRoles() {
   const box = document.getElementById("rolesCheckboxesBox");
